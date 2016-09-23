@@ -4,6 +4,7 @@ package main
 //   This adds zlib decompression to the reader as compression type 2 which is needed to read MCPE ldb files
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/quag/mcobj/nbt"
@@ -31,12 +32,24 @@ func main() {
 	if err != nil {
 		panic("error")
 	}
-	fmt.Println(string(player[:]))
+	fmt.Println(hex.Dump(player[:]))
 	nbtr := bytes.NewReader(player)
 	mynbt := nbt.NewReader(nbtr)
 	// out, _ := nbt.Parse(nbtr)
 	// fmt.Println(json.Marshal(out))
-	fmt.Println(mynbt.ReadStruct())
+	// out, _ := mynbt.ReadStruct()
+	id, out, err := mynbt.ReadTag()
+	if err != nil {
+		panic(err.Error())
+	}
+	fmt.Println("\n\n")
+	fmt.Printf("\n%d%s\n", id, out)
+	id, out, err = mynbt.ReadTag()
+	if err != nil {
+		panic(err.Error())
+	}
+	fmt.Println("\n\n")
+	fmt.Printf("\n%d%s\n", id, out)
 
 	// iterate and print the first 10 key/value pairs
 	iter := db.NewIterator(nil, nil)
@@ -49,7 +62,9 @@ func main() {
 	}
 	iter.Release()
 	err = iter.Error()
-	fmt.Println(err)
+	if err != nil {
+		panic(err.Error())
+	}
 }
 
 // http://minecraft.gamepedia.com/Pocket_Edition_level_format
