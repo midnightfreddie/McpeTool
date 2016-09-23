@@ -18,9 +18,15 @@ func main() {
 	}
 	defer db.Close()
 
+	player, err := db.Get([]byte("~local_player"), nil)
+	if err != nil {
+		panic("error")
+	}
+	fmt.Println(string(player[:]))
+
 	// iterate and print the first 10 key/value pairs
 	iter := db.NewIterator(nil, nil)
-	for i := 1; i < 10; iter.Next() {
+	for i := 1; i < 1; iter.Next() {
 		key := iter.Key()
 		value := iter.Value()
 		fmt.Println(key)
@@ -31,3 +37,5 @@ func main() {
 	err = iter.Error()
 	fmt.Println(err)
 }
+
+// http://minecraft.gamepedia.com/Pocket_Edition_level_format
