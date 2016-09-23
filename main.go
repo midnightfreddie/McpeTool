@@ -1,10 +1,15 @@
 package main
 
+// Note: In my $GOPATH/src I have github.com/midnightfreddie/goleveldb/leveldb (addzlib branch) in place of github.com/syndtr/goleveldb/leveldb
+//   This adds zlib decompression to the reader as compression type 2 which is needed to read MCPE ldb files
 import (
 	"fmt"
 
 	"github.com/syndtr/goleveldb/leveldb"
 )
+
+// Note: Open the .mcworld file as a zip--rename it to .mcworld.zip if needed--then copy the db folder
+//  to the folder where you'll be running this program
 
 func main() {
 	db, err := leveldb.OpenFile("db", nil)
@@ -13,11 +18,9 @@ func main() {
 	}
 	defer db.Close()
 
+	// iterate and print the first 10 key/value pairs
 	iter := db.NewIterator(nil, nil)
-
-	for i := 1; i < 1000; iter.Next() {
-		// Remember that the contents of the returned slice should not be modified, and
-		// only valid until the next call to Next.
+	for i := 1; i < 10; iter.Next() {
 		key := iter.Key()
 		value := iter.Value()
 		fmt.Println(key)
@@ -26,4 +29,5 @@ func main() {
 	}
 	iter.Release()
 	err = iter.Error()
+	fmt.Println(err)
 }
