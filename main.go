@@ -87,7 +87,12 @@ func main() {
 							fmt.Println(string(key[:]))
 						}
 					case len(key) == 13:
-						fmt.Println(key)
+						switch key[12] {
+						case 0x30, 0x31, 0x32, 0x76:
+							fmt.Println(key)
+						default:
+							fmt.Println(string(key[:]))
+						}
 					default:
 						fmt.Println(string(key[:]))
 					}
