@@ -40,3 +40,7 @@ I'm still in proof-of-concept phase, so it's a bit manual:
 - Place https://github.com/midnightfreddie/goleveldb/tree/addzlib (addzlib branch code) into $GOPATH/src/github.com/syndtr/goleveldb/leveldb , or apply [the changes](https://github.com/midnightfreddie/goleveldb/commit/7e93013f9e155f7d70a4bae670630566c6bfc61f) to your local copy of the original repo (had to do this because of fully-qualified import statments) (the changes add zlib decompression as type 2 compression for reading MCPE-modified LevelDB files)
 - Unzip an .mcworld file--rename it to .mcworld.zip if needed--then copy the db folder to the folder where you'll be running this program
 - Build and execute this program
+
+## References
+
+- http://minecraft.gamepedia.com/Pocket_Edition_level_format
