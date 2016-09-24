@@ -1,16 +1,14 @@
 package main
 
-// Note: In my $GOPATH/src I have github.com/midnightfreddie/goleveldb/leveldb (addzlib branch) in place of github.com/syndtr/goleveldb/leveldb
-//   This adds zlib decompression to the reader as compression type 2 which is needed to read MCPE ldb files
 import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
 	"os"
 
+	"github.com/midnightfreddie/goleveldb/leveldb"
+	"github.com/midnightfreddie/goleveldb/leveldb/opt"
 	"github.com/quag/mcobj/nbt"
-	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/urfave/cli"
 )
 
@@ -35,7 +33,6 @@ func proofOfConcept() {
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Println("\n\n")
 	fmt.Printf("\n%d%s\n", id, out)
 
 	// iterate and print the first 10 key/value pairs

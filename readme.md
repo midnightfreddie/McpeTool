@@ -1,10 +1,57 @@
 # MCPE Tool
 
-It does very little at the moment. It's not really even a tool yet; I just had to pick a project name.
-But it can, if set up properly, read a few keys/values from the db folder extracted from a .mcworld file exported from Minecraft Portable Edition.
-I am using the Windows 10 Beta version of Minecraft to export the files.
+A command line tool to read world data from exported MCPE worlds.
+Currently it can read some raw data.
+Later it will interpret the data and perhaps even be able to write information into the world.
+Code will be split into modules making a non-command-line utility possible in the future.
+
+I am using the Windows 10 Beta version of Minecraft to export the files, but presumably this should also work for Android- and iPhone-exported .mcworld files.
 
 The author has no affiliation with Minecraft, Mojang or Microsoft.
+
+## Use
+
+- Unzip an .mcworld file--rename it to .mcworld.zip if needed--so that the "db" folder is accessible. (In the future this utility may be able to read from .mcworld files directly.)
+
+- `McpeTool keys path/to/db` - This will list the keys in the LevelDB world store. Sample partial output:
+
+		[11 0 0 0 255 255 255 255 48]
+		[11 0 0 0 255 255 255 255 118]
+		[12 0 0 0 254 255 255 255 48]
+		[12 0 0 0 254 255 255 255 118]
+		[12 0 0 0 255 255 255 255 48]
+		[12 0 0 0 255 255 255 255 118]
+		BiomeData
+		mVillages
+		portals
+		~local_player
+		[244 255 255 255 0 0 0 0 48]
+		[244 255 255 255 0 0 0 0 49]
+		[244 255 255 255 0 0 0 0 118]
+		[244 255 255 255 252 255 255 255 48]
+		[244 255 255 255 252 255 255 255 118]
+		[245 255 255 255 2 0 0 0 48]
+
+- `McpeTool poc` - Runs the original proof-of-concept code I did. This will be removed soon. Expects the db folder to be in your current working directory. It reads and prints the `~local_player` key value and the first 10 keys and values.
+- `McpeTool` shows the help screen:
+
+		NAME:
+		   MCPE Tool - A utility to access Minecraft Portable Edition .mcworld exported world files.
+
+		USAGE:
+		   McpeTool.exe [global options] command [command options] [arguments...]
+
+		VERSION:
+		   0.0.0
+
+		COMMANDS:
+			 keys, k              Lists all keys in the database. Be sure to include the path to the db, e.g. 'McpeTool keys db'
+			 proofofconcept, poc  Run the original POC code which assumes a folder "db" is present with the *.ldb and other level files
+			 help, h              Shows a list of commands or help for one command
+
+		GLOBAL OPTIONS:
+		   --help, -h     show help
+		   --version, -v  print the version
 
 ## Goals
 
@@ -16,7 +63,6 @@ Whatever is done, I expect it to mostly be command-line based or at least batch-
 
 Some possible near-term goals:
 
-- Create a command-line utility to read information from .mcworld files and/or the extracted db folder
 - Print simple statistics on the world (numbers of block types; player/spawn location)
 - Place one or more terrain blocks into the map from the utility
 
@@ -32,14 +78,6 @@ Some potential long-term goals:
 - Visualizations, likely via JSON output files to be read by a web browser page to generate with d3 or similar library
     - Overhead map
     - Simple 3d representation
-
-## How to make it do anything at all
-
-I'm still in proof-of-concept phase, so it's a bit manual:
-
-- Place https://github.com/midnightfreddie/goleveldb/tree/addzlib (addzlib branch code) into $GOPATH/src/github.com/syndtr/goleveldb/leveldb , or apply [the changes](https://github.com/midnightfreddie/goleveldb/commit/7e93013f9e155f7d70a4bae670630566c6bfc61f) to your local copy of the original repo (had to do this because of fully-qualified import statments) (the changes add zlib decompression as type 2 compression for reading MCPE-modified LevelDB files)
-- Unzip an .mcworld file--rename it to .mcworld.zip if needed--then copy the db folder to the folder where you'll be running this program
-- Build and execute this program
 
 ## References
 
