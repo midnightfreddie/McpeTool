@@ -77,7 +77,20 @@ func main() {
 
 				iter := db.NewIterator(nil, nil)
 				for iter.Next() {
-					fmt.Println(iter.Key())
+					key := iter.Key()
+					switch {
+					case len(key) == 9:
+						switch key[8] {
+						case 0x30, 0x31, 0x32, 0x76:
+							fmt.Println(key)
+						default:
+							fmt.Println(string(key[:]))
+						}
+					case len(key) == 13:
+						fmt.Println(key)
+					default:
+						fmt.Println(string(key[:]))
+					}
 				}
 				iter.Release()
 				err = iter.Error()
