@@ -113,29 +113,33 @@ func main() {
 				}
 				defer db.Close()
 
-				iter := db.NewIterator(nil, nil)
-				for iter.Next() {
-					key := iter.Key()
-					if len(key) == 9 && key[8] == 0x30 {
-						chunk := iter.Value()
-						for i := 0; i < 256; i++ {
-							cx := i / 16
-							y := 0
-							cz := i % 16
-							idx := 2048*cx + y + 128*cz
-							// if (i%16)%2 == 0 {
-							// 	chunk[idx] = 20
-							// }
-							fmt.Printf("%d ", chunk[idx])
-							// fmt.Printf("%d %d %d\n", i, cx, cz)
-						}
-						fmt.Printf("\n\n")
-					}
-					// chunk := iter.Value()
-					// fmt.Printf("%d %d %d\n", len(key), key[len(key)-1:], len(chunk))
+				// iter := db.NewIterator(nil, nil)
+				// for iter.Next() {
+				// 	key := iter.Key()
+				// 	if len(key) == 9 && key[8] == 0x30 {
+				// 		chunk := iter.Value()
+				// 		for i := 0; i < 256; i++ {
+				// 			cx := i / 16
+				// 			y := 127
+				// 			cz := i % 16
+				// 			idx := 2048*cx + y + 128*cz
+				// 			if (i%16)%2 == 0 {
+				// 				chunk[idx] = 20
+				// 			}
+				// 			fmt.Printf("%d ", chunk[idx])
+				// 		}
+				// 		fmt.Printf("\n\n")
+				// 	}
+				// }
+				// iter.Release()
+				// err = iter.Error()
+				key := [9]byte{0, 0, 0, 0, 0, 0, 0, 0, 0x30}
+				chunk, _ := db.Get(key[:], nil)
+				for i := 0; i < 128; i++ {
+					chunk[i] = 20
 				}
-				iter.Release()
-				err = iter.Error()
+				err = db.Put(key[:], chunk, nil)
+
 				if err != nil {
 					panic(err.Error())
 				}
