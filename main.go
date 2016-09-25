@@ -133,10 +133,16 @@ func main() {
 				// }
 				// iter.Release()
 				// err = iter.Error()
-				key := [9]byte{0, 0, 0, 0, 0, 0, 0, 0, 0x30}
-				chunk, _ := db.Get(key[:], nil)
+				key := [9]byte{1, 0, 0, 0, 1, 0, 0, 0, 0x30}
+				value, err := db.Get(key[:], nil)
+				if err != nil {
+					panic(err.Error())
+				}
+				// make copy of value slice; not supposed to alter the value slice?
+				chunk := make([]byte, len(value))
+				copy(chunk, value)
 				for i := 0; i < 128; i++ {
-					chunk[i] = 20
+					chunk[i] = 57
 				}
 				err = db.Put(key[:], chunk, nil)
 
