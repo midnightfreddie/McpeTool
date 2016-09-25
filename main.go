@@ -140,9 +140,26 @@ func main() {
 				}
 				// make copy of value slice; not supposed to alter the value slice?
 				chunk := make([]byte, len(value))
-				copy(chunk, value)
+				// copy(chunk, value)
+				for i := 1; i < 256; i++ {
+					chunk[i*128] = 20
+					chunk[i*128+1] = 9
+				}
+				cx := 0
+				cz := 0
 				for i := 0; i < 128; i++ {
-					chunk[i] = 57
+					chunk[i+128*136] = 91
+					chunk[2048*cx+128*cz+i] = 91
+					switch (i / 15) % 4 {
+					case 0:
+						cx++
+					case 1:
+						cz++
+					case 2:
+						cx--
+					case 3:
+						cz--
+					}
 				}
 				err = db.Put(key[:], chunk, nil)
 
