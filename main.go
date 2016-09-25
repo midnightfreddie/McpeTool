@@ -103,6 +103,46 @@ func main() {
 			},
 		},
 		{
+			Name:    "develop",
+			Aliases: []string{"dev"},
+			Usage:   "Random thing the dev is working on",
+			Action: func(c *cli.Context) error {
+				db, err := leveldb.OpenFile(c.Args().First(), nil)
+				if err != nil {
+					panic("error")
+				}
+				defer db.Close()
+
+				iter := db.NewIterator(nil, nil)
+				for iter.Next() {
+					key := iter.Key()
+					if len(key) == 9 && key[8] == 0x30 {
+						chunk := iter.Value()
+						for i := 0; i < 256; i++ {
+							cx := i / 16
+							y := 0
+							cz := i % 16
+							idx := 2048*cx + y + 128*cz
+							// if (i%16)%2 == 0 {
+							// 	chunk[idx] = 20
+							// }
+							fmt.Printf("%d ", chunk[idx])
+							// fmt.Printf("%d %d %d\n", i, cx, cz)
+						}
+						fmt.Printf("\n\n")
+					}
+					// chunk := iter.Value()
+					// fmt.Printf("%d %d %d\n", len(key), key[len(key)-1:], len(chunk))
+				}
+				iter.Release()
+				err = iter.Error()
+				if err != nil {
+					panic(err.Error())
+				}
+				return nil
+			},
+		},
+		{
 			Name:    "proofofconcept",
 			Aliases: []string{"poc"},
 			Usage:   "Run the original POC code which assumes a folder \"db\" is present with the *.ldb and other level files",
