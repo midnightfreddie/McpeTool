@@ -161,10 +161,12 @@ func main() {
 						cz--
 					}
 				}
-				err = db.Put(key[:], chunk, nil)
-
-				if err != nil {
-					panic(err.Error())
+				for i := 1; i < 40; i++ {
+					key[0] = byte(i)
+					err = db.Put(key[:], chunk, nil)
+					if err != nil {
+						panic(err.Error())
+					}
 				}
 				return nil
 			},

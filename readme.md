@@ -13,6 +13,13 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 
 - Read raw keys and data from db/ folder LevelDB database (manually unzipped from .mcworld file)
 - Wrote terrain blocks—a column of diamond blocks from y=0 to y=127—into an existing survival mode world and was able to continue playing that level in Win10 Edition and Android. (Manually added modified db folder into .mcworld for Win10, and manually copied world folders to Android.)
+- Wrote 40 chunks from 1-40 on the x axis beyond where terrain was pre-generated
+	- Written chunks had glass bottom, a water layer and jack o'lantern pillar and "stairs" around the chunk perimeter
+	- It was playable
+	- The chunks surrounding the new chunks generated automatically when playing
+	- Tree leaves would generate protruding into my placed chunks' air space
+	- The generated terrain tried to match my chunks, but since my chunks had a "spiral staircase" around the perimeter the results were interesting (uneven on each side of the chunk; generally very mountainous)
+	- Jack o'lanterns and water are supposed to have additional data in the db, but MCPE seems tolerant of this missing data and assigns sane defaults, apparently 
 
 ## Use
 
