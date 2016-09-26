@@ -50,24 +50,24 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 - `McpeTool api path/to/db` - Starts httpd daemon on localhost:8080. Any web requests to it will return a JSON-endoded list of keys in the database (each base64-encoded) 
 - `McpeTool` shows the help screen:
 
-	NAME:
-	   MCPE Tool - A utility to access Minecraft Portable Edition .mcworld exported world files.
+		NAME:
+		   MCPE Tool - A utility to access Minecraft Portable Edition .mcworld exported world files.
 
-	USAGE:
-	   McpeTool.exe [global options] command [command options] [arguments...]
+		USAGE:
+		   McpeTool.exe [global options] command [command options] [arguments...]
 
-	VERSION:
-	   0.0.0
+		VERSION:
+		   0.0.0
 
-	COMMANDS:
-		 keys, k       Lists all keys in the database. Be sure to include the path to the db, e.g. 'McpeTool keys db'
-		 develop, dev  Random thing the dev is working on
-		 api, www      Open world and start http API. Hit control-c to exit.
-		 help, h       Shows a list of commands or help for one command
+		COMMANDS:
+			 keys, k       Lists all keys in the database. Be sure to include the path to the db, e.g. 'McpeTool keys db'
+			 develop, dev  Random thing the dev is working on
+			 api, www      Open world and start http API. Hit control-c to exit.
+			 help, h       Shows a list of commands or help for one command
 
-	GLOBAL OPTIONS:
-	   --help, -h     show help
-	   --version, -v  print the version
+		GLOBAL OPTIONS:
+		   --help, -h     show help
+		   --version, -v  print the version
 
 ## Goals
 
