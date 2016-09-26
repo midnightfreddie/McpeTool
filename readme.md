@@ -19,7 +19,10 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 	- The chunks surrounding the new chunks generated automatically when playing
 	- Tree leaves would generate protruding into my placed chunks' air space
 	- The generated terrain tried to match my chunks, but since my chunks had a "spiral staircase" around the perimeter the results were interesting (uneven on each side of the chunk; generally very mountainous)
-	- Jack o'lanterns and water are supposed to have additional data in the db, but MCPE seems tolerant of this missing data and assigns sane defaults, apparently 
+	- Jack o'lanterns and water are supposed to have additional data in the db, but MCPE seems tolerant of this missing data and assigns sane defaults, apparently
+- Blanked out db, only put in very simple row of chunks
+	- level.dat still in place
+	- Game spawned the player on the chunk ground and generated surrounding terrain
 
 ## Use
 

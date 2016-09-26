@@ -133,35 +133,37 @@ func main() {
 				// }
 				// iter.Release()
 				// err = iter.Error()
-				key := [9]byte{1, 0, 0, 0, 1, 0, 0, 0, 0x30}
-				value, err := db.Get(key[:], nil)
-				if err != nil {
-					panic(err.Error())
-				}
+				key := [9]byte{0, 0, 0, 0, 0, 0, 0, 0, 0x30}
+				// value, err := db.Get(key[:], nil)
+				// if err != nil {
+				// 	panic(err.Error())
+				// }
 				// make copy of value slice; not supposed to alter the value slice?
-				chunk := make([]byte, len(value))
+				// chunk := make([]byte, len(value))
+				chunk := make([]byte, 83200)
 				// copy(chunk, value)
 				for i := 1; i < 256; i++ {
-					chunk[i*128] = 20
-					chunk[i*128+1] = 9
+					chunk[i*128] = 7
+					chunk[i*128+1] = 1
+					chunk[i*128+2] = 2
 				}
-				cx := 0
-				cz := 0
+				// cx := 0
+				// cz := 0
 				for i := 0; i < 128; i++ {
 					chunk[i+128*136] = 91
-					chunk[2048*cx+128*cz+i] = 91
-					switch (i / 15) % 4 {
-					case 0:
-						cx++
-					case 1:
-						cz++
-					case 2:
-						cx--
-					case 3:
-						cz--
-					}
+					// chunk[2048*cx+128*cz+i] = 91
+					// switch (i / 15) % 4 {
+					// case 0:
+					// 	cx++
+					// case 1:
+					// 	cz++
+					// case 2:
+					// 	cx--
+					// case 3:
+					// 	cz--
+					// }
 				}
-				for i := 1; i < 40; i++ {
+				for i := 0; i < 8; i++ {
 					key[0] = byte(i)
 					err = db.Put(key[:], chunk, nil)
 					if err != nil {
