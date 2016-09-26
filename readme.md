@@ -47,26 +47,27 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 		[244 255 255 255 252 255 255 255 118]
 		[245 255 255 255 2 0 0 0 48]
 
-- `McpeTool poc` - Runs the original proof-of-concept code I did. This will be removed soon. Expects the db folder to be in your current working directory. It reads and prints the `~local_player` key value and the first 10 keys and values.
+- `McpeTool api path/to/db` - Starts httpd daemon on localhost:8080. Any web requests to it will return a JSON-endoded list of keys in the database (each base64-encoded) 
 - `McpeTool` shows the help screen:
 
-		NAME:
-		   MCPE Tool - A utility to access Minecraft Portable Edition .mcworld exported world files.
+	NAME:
+	   MCPE Tool - A utility to access Minecraft Portable Edition .mcworld exported world files.
 
-		USAGE:
-		   McpeTool.exe [global options] command [command options] [arguments...]
+	USAGE:
+	   McpeTool.exe [global options] command [command options] [arguments...]
 
-		VERSION:
-		   0.0.0
+	VERSION:
+	   0.0.0
 
-		COMMANDS:
-			 keys, k              Lists all keys in the database. Be sure to include the path to the db, e.g. 'McpeTool keys db'
-			 proofofconcept, poc  Run the original POC code which assumes a folder "db" is present with the *.ldb and other level files
-			 help, h              Shows a list of commands or help for one command
+	COMMANDS:
+		 keys, k       Lists all keys in the database. Be sure to include the path to the db, e.g. 'McpeTool keys db'
+		 develop, dev  Random thing the dev is working on
+		 api, www      Open world and start http API. Hit control-c to exit.
+		 help, h       Shows a list of commands or help for one command
 
-		GLOBAL OPTIONS:
-		   --help, -h     show help
-		   --version, -v  print the version
+	GLOBAL OPTIONS:
+	   --help, -h     show help
+	   --version, -v  print the version
 
 ## Goals
 
