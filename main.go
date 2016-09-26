@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/midnightfreddie/McpeTool/api"
 	"github.com/midnightfreddie/goleveldb/leveldb"
 	"github.com/midnightfreddie/goleveldb/leveldb/opt"
 	"github.com/urfave/cli"
@@ -70,6 +71,23 @@ func main() {
 					panic("error")
 				}
 				defer db.Close()
+				return nil
+			},
+		},
+		{
+			Name:    "api",
+			Aliases: []string{"www"},
+			Usage:   "Open world and start http API. Hit control-c to exit.",
+			Action: func(c *cli.Context) error {
+				db, err := leveldb.OpenFile(c.Args().First(), nil)
+				if err != nil {
+					panic("error")
+				}
+				defer db.Close()
+				err = api.Server(db)
+				if err != nil {
+					panic("error")
+				}
 				return nil
 			},
 		},
