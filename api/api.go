@@ -11,22 +11,31 @@ import (
 )
 
 type Key struct {
+	KeyString string `json:"keyString,omitempty"`
 	Base64Key string `json:"base64Key"`
 	Key       []int  `json:"key"`
 }
 
 // SetKey is used to set the base64 and byte array versions of the key and ensure consistency
 func (k *Key) SetKey(key []byte) {
+	// json.Marshall will base64-encode byte arrays instead of making a JSON array, so making an array of ints to get desired behavior in JSON output
 	k.Key = make([]int, len(key))
+	allAscii := true
 	for i := range key {
 		k.Key[i] = int(key[i])
+		if key[i] < 0x20 || key[i] > 0x7e {
+			allAscii = false
+		}
+	}
+	if allAscii {
+		k.KeyString = string(key[:])
 	}
 	k.Base64Key = base64.StdEncoding.EncodeToString(key)
 }
 
 // KeyList is the structure used for JSON replies to key list requests
 type KeyList struct {
-	KeyList []Key `json:"keyList"`
+	Keys []Key `json:"keys"`
 }
 
 // SetKeys is used to populate an array of Keys
@@ -35,7 +44,7 @@ func (k *KeyList) SetKeys(inKeyList [][]byte) {
 	for i := 0; i < len(inKeyList); i++ {
 		outKeyList[i].SetKey(inKeyList[i])
 	}
-	k.KeyList = append(k.KeyList, outKeyList...)
+	k.Keys = append(k.Keys, outKeyList...)
 }
 
 // Server is the http REST API server

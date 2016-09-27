@@ -1,6 +1,6 @@
 # MCPE Tool
 
-A command line tool to read and write world data from Minecraft Pocket Edition worlds.
+A tool to read and write world data from Minecraft Pocket Edition worlds.
 Currently it can read raw data from command line or web API.
 It's capable of writing, and game-tested, but I'm currently working on the API to write data.
 Later it will interpret the data and perhaps even be able to write information into the world.
@@ -18,7 +18,7 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 	- For Android or iOS, backup and copy the worlds via USB or file manager app (transfer via cloud drive or Bluetooth)
 	- The world folder will include a "level.dat" file and a "db" directory
 
-- `McpeTool api path/to/world` - Starts a web server on port 8080 allowing REST API access to the world. http://localhost:8080/api/v1/db/ will return the DB keys. Keys and data are base64 encoded.
+- `McpeTool api path/to/world` - Starts a web server on port 8080 allowing REST API access to the world. http://localhost:8080/api/v1/db/ will return the DB keys. Other handlers coming soon. Keys and data are base64 encoded.
 - `McpeTool keys path/to/world` - This will list the keys in the LevelDB world store in base64 format
 - `McpeTool get path/to/world base64key` - Returns the data for the given key in base64 format. Example: `McpeTool.exe get path/to/world fmxvY2FsX3BsYXllcg==` returns player data in base64 format.
 - `put` is not yet implemented via command line because the data would be too big for parameters
