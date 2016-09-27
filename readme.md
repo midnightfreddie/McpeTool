@@ -51,7 +51,7 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 - `McpeTool` shows the help screen:
 
 		NAME:
-		   MCPE Tool - A utility to access Minecraft Portable Edition .mcworld exported world files.
+		   MCPE Tool - A utility to access Minecraft Pocket Edition .mcworld exported world files.
 
 		USAGE:
 		   McpeTool.exe [global options] command [command options] [arguments...]

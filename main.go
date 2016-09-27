@@ -14,7 +14,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "MCPE Tool"
 	app.Version = "0.0.0"
-	app.Usage = "A utility to access Minecraft Portable Edition .mcworld exported world files."
+	app.Usage = "A utility to access Minecraft Pocket Edition .mcworld exported world files."
 
 	app.Commands = []cli.Command{
 		{
