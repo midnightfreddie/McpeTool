@@ -86,6 +86,10 @@ My main focus is to allow low-level access via simple APIs so more complex logic
 - Blanked out db, only put in very simple row of chunks
 	- level.dat still in place
 	- Game spawned the player on the chunk ground and generated surrounding terrain
+- Deleted terrain chunks
+	- Somehow the game preserved or recovered the deleted chunks, complete with in-game player modifications
+- Deleted player
+	- Player spanwed at original spawn point with no inventory
 
 ## Notes
 
