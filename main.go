@@ -82,6 +82,7 @@ func main() {
 					panic("error")
 				}
 				fmt.Printf("%v\n", keys)
+				fmt.Println(world.FilePath())
 				return nil
 			},
 		},
