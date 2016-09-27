@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/midnightfreddie/McpeTool/api"
+	"github.com/midnightfreddie/McpeTool/world"
 	"github.com/midnightfreddie/goleveldb/leveldb"
 	"github.com/midnightfreddie/goleveldb/leveldb/opt"
 	"github.com/urfave/cli"
@@ -66,11 +67,21 @@ func main() {
 			Aliases: []string{"dev"},
 			Usage:   "Random thing the dev is working on",
 			Action: func(c *cli.Context) error {
-				db, err := leveldb.OpenFile(c.Args().First(), nil)
+				// db, err := leveldb.OpenFile(c.Args().First(), nil)
+				// if err != nil {
+				// 	panic("error")
+				// }
+				// defer db.Close()
+				world, err := world.OpenWorld(c.Args().First())
 				if err != nil {
 					panic("error")
 				}
-				defer db.Close()
+				defer world.Close()
+				keys, err := world.GetKeys()
+				if err != nil {
+					panic("error")
+				}
+				fmt.Printf("%v\n", keys)
 				return nil
 			},
 		},
