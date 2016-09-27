@@ -11,19 +11,22 @@ import (
 )
 
 type Key struct {
-	Base64Key string
-	Key       []byte
+	Base64Key string `json:"base64Key"`
+	Key       []int  `json:"key"`
 }
 
 // SetKey is used to set the base64 and byte array versions of the key and ensure consistency
 func (k *Key) SetKey(key []byte) {
-	k.Key = key
+	k.Key = make([]int, len(key))
+	for i := range key {
+		k.Key[i] = int(key[i])
+	}
 	k.Base64Key = base64.StdEncoding.EncodeToString(key)
 }
 
 // KeyList is the structure used for JSON replies to key list requests
 type KeyList struct {
-	KeyList []Key
+	KeyList []Key `json:"keyList"`
 }
 
 // SetKeys is used to populate an array of Keys
