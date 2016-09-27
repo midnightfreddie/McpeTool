@@ -3,7 +3,6 @@
 A tool to read and write world data from Minecraft Pocket Edition worlds.
 Currently it can read raw data from command line or web API.
 It's capable of writing, and game-tested, but I'm currently working on the API to write data.
-Later it will interpret the data and perhaps even be able to write information into the world.
 Code is now in modules making a non-command-line utility possible.
 
 I am using the Windows 10 Beta version of Minecraft to export and import the .mcworld files, but this should also work for Android and iPhone world directories if you manually copy them from/to the device.
