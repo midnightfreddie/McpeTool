@@ -1,13 +1,13 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 
 	"github.com/midnightfreddie/McpeTool/api"
 	"github.com/midnightfreddie/McpeTool/world"
 	"github.com/midnightfreddie/goleveldb/leveldb"
-	"github.com/midnightfreddie/goleveldb/leveldb/opt"
 	"github.com/urfave/cli"
 )
 
@@ -21,44 +21,42 @@ func main() {
 		{
 			Name:    "keys",
 			Aliases: []string{"k"},
-			Usage:   "Lists all keys in the database. Be sure to include the path to the db, e.g. 'McpeTool keys db'",
+			Usage:   "Lists all keys in the database in base64 format. Be sure to include the path to the world folder, e.g. 'McpeTool keys path/to/world'",
 			Action: func(c *cli.Context) error {
-				o := &opt.Options{
-					ReadOnly: true,
-				}
-				db, err := leveldb.OpenFile(c.Args().First(), o)
+				world, err := world.OpenWorld(c.Args().First())
 				if err != nil {
-					panic("error")
+					return err
 				}
-				defer db.Close()
-
-				iter := db.NewIterator(nil, nil)
-				for iter.Next() {
-					key := iter.Key()
-					switch {
-					case len(key) == 9:
-						switch key[8] {
-						case 0x30, 0x31, 0x32, 0x76:
-							fmt.Println(key)
-						default:
-							fmt.Println(string(key[:]))
-						}
-					case len(key) == 13:
-						switch key[12] {
-						case 0x30, 0x31, 0x32, 0x76:
-							fmt.Println(key)
-						default:
-							fmt.Println(string(key[:]))
-						}
-					default:
-						fmt.Println(string(key[:]))
-					}
-				}
-				iter.Release()
-				err = iter.Error()
+				defer world.Close()
+				keys, err := world.GetKeys()
 				if err != nil {
-					panic(err.Error())
+					return err
 				}
+				for i := 0; i < len(keys); i++ {
+					fmt.Println(base64.StdEncoding.EncodeToString(keys[i]))
+				}
+				return nil
+			},
+		},
+		{
+			Name:  "get",
+			Usage: "Retruns the value of a key. Both key and value are in base64 format. e.g. 'McpeTool get path/to/world AAAAAAAAAAAw' for terrain chunk 0,0 or 'McpeTool get path/to/world fmxvY2FsX3BsYXllcg==' for ~local_player player data",
+			Action: func(c *cli.Context) error {
+				world, err := world.OpenWorld(c.Args().First())
+				if err != nil {
+					return err
+				}
+				defer world.Close()
+				key, err := base64.StdEncoding.DecodeString(c.Args().Get(1))
+				if err != nil {
+					return err
+				}
+				fmt.Printf("%v\n", key)
+				value, err := world.Get(key)
+				if err != nil {
+					return err
+				}
+				fmt.Println(base64.StdEncoding.EncodeToString(value))
 				return nil
 			},
 		},
