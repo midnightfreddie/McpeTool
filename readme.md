@@ -1,13 +1,77 @@
 # MCPE Tool
 
-A command line tool to read world data from exported MCPE worlds.
-Currently it can read and write raw, hard-coded data.
+A command line tool to read and write world data from Minecraft Pocket Edition worlds.
+Currently it can read raw data from command line or web API.
+It's capable of writing, and game-tested, but I'm currently working on the API to write data.
 Later it will interpret the data and perhaps even be able to write information into the world.
-Code will be split into modules making a non-command-line utility possible in the future.
+Code is now in modules making a non-command-line utility possible.
 
-I am using the Windows 10 Beta version of Minecraft to export the files, but presumably this should also work for Android- and iPhone-exported .mcworld files.
+I am using the Windows 10 Beta version of Minecraft to export and import the .mcworld files, but this should also work for Android and iPhone world directories if you manually copy them from/to the device.
 
 The author has no affiliation with Minecraft, Mojang or Microsoft.
+
+## Use
+
+- **Back up your worlds**
+- Copy an MCPE world to a working folder
+	- Windows 10 Edition: Unzip an .mcworld file--rename it to .mcworld.zip if needed--so that the contents including the "db" folder are accessible. (In the future this utility may be able to read from .mcworld files directly.)
+	- For Android or iOS, backup and copy the worlds via USB or file manager app (transfer via cloud drive or Bluetooth)
+	- The world folder will include a "level.dat" file and a "db" directory
+
+- `McpeTool api path/to/world` - Starts a web server on port 8080 allowing REST API access to the world. http://localhost:8080/api/v1/db/ will return the DB keys. Keys and data are base64 encoded.
+- `McpeTool keys path/to/world` - This will list the keys in the LevelDB world store in base64 format
+- `McpeTool get path/to/world base64key` - Returns the data for the given key in base64 format. Example: `McpeTool.exe get path/to/world fmxvY2FsX3BsYXllcg==` returns player data in base64 format.
+- `put` is not yet implemented via command line because the data would be too big for parameters
+- `McpeTool delete path/to/world base64key` - Deletes the key/value pair for that key if present. Example: `McpeTool.exe delete path/to/world fmxvY2FsX3BsYXllcg==` deletes the player data. If you do this and play the world, you will spawn at the original location with no inventory.
+- `McpeTool` shows the help screen:
+
+		NAME:
+		   MCPE Tool - A utility to access Minecraft Pocket Edition .mcworld exported world files.
+
+		USAGE:
+		   McpeTool.exe [global options] command [command options] [arguments...]
+
+		VERSION:
+		   0.0.0
+
+		COMMANDS:
+			 api, www      Open world and start http API. Hit control-c to exit.
+			 keys, k       Lists all keys in the database in base64 format. Be sure to include the path to the world folder, e.g. 'McpeTool keys path/to/world'
+			 get           Retruns the value of a key. Both key and value are in base64 format. e.g. 'McpeTool get path/to/world AAAAAAAAAAAw' for terrain chunk 0,0 or 'McpeTool get path/to/world fmxvY2FsX3BsYXllcg==' for ~local_player player data
+			 delete        Deletes a key and its value. The key is in base64 format. e.g. 'McpeTool delete path/to/world AAAAAAAAAAAw' to delete terrain chunk 0,0 or 'McpeTool delete path/to/world fmxvY2FsX3BsYXllcg==' to delete ~local_player player data
+			 develop, dev  Random thing the dev is working on
+			 help, h       Shows a list of commands or help for one command
+
+		GLOBAL OPTIONS:
+		   --help, -h     show help
+		   --version, -v  print the version
+
+## Goals
+
+My original impulse was to create simple block structures--mob spawners, perhaps--in an existing world.
+And to create a flat survival world.
+My early attempts to read and later write the world were successful, and then I realized that a simple API would make this program versatile and not break every time MCPE updates.
+My main focus is to allow low-level access via simple APIs so more complex logic can be handled by any program in any language.
+
+- Read/Write command-line access to worlds
+- Read/Write local REST API access to worlds
+	- Allow raw key get/put/delete
+	- Allow raw get/put/delete to level.dat and level.txt
+	- Provide basic in-browser web app to do simple world edits using API
+- Friendlier API allowing access to blocks, entities, players and other game settings (villages? portals?). Possibly also:
+	- Find/replace blocks
+	- Place predefined structures
+- For friendly APIs, allow user to provide config files so the program should be usable on future world version updates
+- Allow reading/writing .mcworld files without manual unzip/zip
+- Auto-detect if provided path is a world directory, LevelDB directory or zipped exported world
+- Print simple statistics on the world (numbers of block types; player/spawn location)
+- (Maybe) Convert Anvil worlds to LevelDB
+    - This wasn't originally a goal of mine, but it seems to have some interest from others
+    - The [jteeuwen/mctools](https://github.com/jteeuwen/mctools) repo is unstarred, but his other projects are well-starred and the project well-documented. I'll look at its Anvil module for this purpose.
+	- First problem: Anvil worlds are 256 blocks high while PE worlds are 128 blocks high.
+- Visualizations, likely via JSON output files to be read by a web browser page to generate with d3 or similar library
+    - Overhead map
+    - Simple 3d representation
 
 ## Accomplishments
 
@@ -23,83 +87,6 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 - Blanked out db, only put in very simple row of chunks
 	- level.dat still in place
 	- Game spawned the player on the chunk ground and generated surrounding terrain
-
-## Use
-
-- Unzip an .mcworld file--rename it to .mcworld.zip if needed--so that the "db" folder is accessible. (In the future this utility may be able to read from .mcworld files directly.)
-
-- `McpeTool keys path/to/db` - This will list the keys in the LevelDB world store. Sample partial output:
-
-		[11 0 0 0 255 255 255 255 48]
-		[11 0 0 0 255 255 255 255 118]
-		[12 0 0 0 254 255 255 255 48]
-		[12 0 0 0 254 255 255 255 118]
-		[12 0 0 0 255 255 255 255 48]
-		[12 0 0 0 255 255 255 255 118]
-		BiomeData
-		mVillages
-		portals
-		~local_player
-		[244 255 255 255 0 0 0 0 48]
-		[244 255 255 255 0 0 0 0 49]
-		[244 255 255 255 0 0 0 0 118]
-		[244 255 255 255 252 255 255 255 48]
-		[244 255 255 255 252 255 255 255 118]
-		[245 255 255 255 2 0 0 0 48]
-
-- `McpeTool api path/to/db` - Starts httpd daemon on localhost:8080. Any web requests to it will return a JSON-endoded list of keys in the database (each base64-encoded) 
-- `McpeTool` shows the help screen:
-
-		NAME:
-		   MCPE Tool - A utility to access Minecraft Pocket Edition .mcworld exported world files.
-
-		USAGE:
-		   McpeTool.exe [global options] command [command options] [arguments...]
-
-		VERSION:
-		   0.0.0
-
-		COMMANDS:
-			 keys, k       Lists all keys in the database. Be sure to include the path to the db, e.g. 'McpeTool keys db'
-			 develop, dev  Random thing the dev is working on
-			 api, www      Open world and start http API. Hit control-c to exit.
-			 help, h       Shows a list of commands or help for one command
-
-		GLOBAL OPTIONS:
-		   --help, -h     show help
-		   --version, -v  print the version
-
-## Goals
-
-I don't know. My original impulse was to create simple block structures--mob spawners, perhaps--in an existing world.
-And to create a flat survival world.
-Step one was to see if I could even access the world data, and surprisingly I can, so now I'll continue tinkering and seeing what I can read and later what I can write into the world.
-
-Whatever is done, I expect it to mostly be command-line based or at least batch-oriented and not like in-game creative mode or MCEdit.
-
-Some possible near-term goals:
-
-- Modularize world access
-	- Allow get/put of individual terrain blocks (no entity/expanded data yet)
-	- Wrap chunk read/write calls
-- Allow reading/writing .mcworld files without manual unzip/zip
-- Auto-detect if provided path is a world directory, LevelDB directory or zipped exported world
-- Print simple statistics on the world (numbers of block types; player/spawn location)
-
-Some potential long-term goals:
-
-- Replace terrain blocks with other types
-- Place complete structures
-- Convert Anvil worlds to MCPE
-    - This wasn't originally a goal of mine, but it seems to have some interest from others
-    - The [jteeuwen/mctools](https://github.com/jteeuwen/mctools) repo is unstarred, but his other projects are well-starred and the project well-documented. I'll look at its Anvil module for this purpose.
-    - Create a new playable world
-        - And by playable I mean the game will load it and place the player
-        - The world itself will probably be very simple and flat
-	- First problem: Anvil worlds are 256 blocks high while PE worlds are 128 blocks high.
-- Visualizations, likely via JSON output files to be read by a web browser page to generate with d3 or similar library
-    - Overhead map
-    - Simple 3d representation
 
 ## Notes
 
