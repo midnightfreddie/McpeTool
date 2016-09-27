@@ -7,7 +7,6 @@ import (
 
 	"github.com/midnightfreddie/McpeTool/api"
 	"github.com/midnightfreddie/McpeTool/world"
-	"github.com/midnightfreddie/goleveldb/leveldb"
 	"github.com/urfave/cli"
 )
 
@@ -18,6 +17,23 @@ func main() {
 	app.Usage = "A utility to access Minecraft Pocket Edition .mcworld exported world files."
 
 	app.Commands = []cli.Command{
+		{
+			Name:    "api",
+			Aliases: []string{"www"},
+			Usage:   "Open world and start http API. Hit control-c to exit.",
+			Action: func(c *cli.Context) error {
+				world, err := world.OpenWorld(c.Args().First())
+				if err != nil {
+					panic("error")
+				}
+				defer world.Close()
+				err = api.Server(&world)
+				if err != nil {
+					panic("error")
+				}
+				return nil
+			},
+		},
 		{
 			Name:    "keys",
 			Aliases: []string{"k"},
@@ -51,7 +67,6 @@ func main() {
 				if err != nil {
 					return err
 				}
-				fmt.Printf("%v\n", key)
 				value, err := world.Get(key)
 				if err != nil {
 					return err
@@ -61,43 +76,41 @@ func main() {
 			},
 		},
 		{
-			Name:    "develop",
-			Aliases: []string{"dev"},
-			Usage:   "Random thing the dev is working on",
+			Name:  "delete",
+			Usage: "Deletes a key and its value. The key is in base64 format. e.g. 'McpeTool delete path/to/world AAAAAAAAAAAw' to delete terrain chunk 0,0 or 'McpeTool delete path/to/world fmxvY2FsX3BsYXllcg==' to delete ~local_player player data",
 			Action: func(c *cli.Context) error {
-				// db, err := leveldb.OpenFile(c.Args().First(), nil)
-				// if err != nil {
-				// 	panic("error")
-				// }
-				// defer db.Close()
 				world, err := world.OpenWorld(c.Args().First())
 				if err != nil {
-					panic("error")
+					return err
 				}
 				defer world.Close()
-				keys, err := world.GetKeys()
+				key, err := base64.StdEncoding.DecodeString(c.Args().Get(1))
 				if err != nil {
-					panic("error")
+					return err
 				}
-				fmt.Printf("%v\n", keys)
-				fmt.Println(world.FilePath())
+				err = world.Delete(key)
+				if err != nil {
+					return err
+				}
 				return nil
 			},
 		},
 		{
-			Name:    "api",
-			Aliases: []string{"www"},
-			Usage:   "Open world and start http API. Hit control-c to exit.",
+			Name:    "develop",
+			Aliases: []string{"dev"},
+			Usage:   "Random thing the dev is working on",
 			Action: func(c *cli.Context) error {
-				db, err := leveldb.OpenFile(c.Args().First(), nil)
+				world, err := world.OpenWorld(c.Args().First())
 				if err != nil {
-					panic("error")
+					return err
 				}
-				defer db.Close()
-				err = api.Server(db)
+				defer world.Close()
+				keys, err := world.GetKeys()
 				if err != nil {
-					panic("error")
+					return err
 				}
+				fmt.Printf("%v\n", keys)
+				fmt.Println(world.FilePath())
 				return nil
 			},
 		},

@@ -6,22 +6,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/midnightfreddie/goleveldb/leveldb"
+	"github.com/midnightfreddie/McpeTool/world"
 )
 
 // Server is the http REST API server
-func Server(db *leveldb.DB) error {
+func Server(world *world.World) error {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		keylist := [][]byte{}
-		iter := db.NewIterator(nil, nil)
-		for iter.Next() {
-			key := iter.Key()
-			tmp := make([]byte, len(key))
-			copy(tmp, key)
-			keylist = append(keylist, tmp)
-		}
-		iter.Release()
-		err := iter.Error()
+		keylist, err := world.GetKeys()
 		if err != nil {
 			panic(err.Error())
 		}

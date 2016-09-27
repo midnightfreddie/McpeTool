@@ -1,6 +1,11 @@
 package world
 
-import "github.com/midnightfreddie/goleveldb/leveldb"
+import (
+	"errors"
+	"os"
+
+	"github.com/midnightfreddie/goleveldb/leveldb"
+)
 
 // World holds the LevelDB instance, wraps its functions and provides functions for any other World needs
 type World struct {
@@ -12,7 +17,18 @@ type World struct {
 func OpenWorld(path string) (World, error) {
 	world := World{nil, path}
 	var err error
-	world.db, err = leveldb.OpenFile(path+"/db", nil)
+	dbPath := path + "/db"
+
+	// For now, abort if path/db doesn't exist or if it's not a directory . Later may add an option to create if not exist or otherwise validate world
+	fileInfo, err := os.Stat(dbPath)
+	if os.IsNotExist(err) {
+		return world, errors.New(dbPath + " does not exist. This must be run against a valid world folder.")
+	}
+	if !fileInfo.IsDir() {
+		return world, errors.New(dbPath + " is not a directory. This must be run against a valid world folder.")
+	}
+
+	world.db, err = leveldb.OpenFile(dbPath, nil)
 	if err != nil {
 		_ = world.db.Close()
 		return world, err
