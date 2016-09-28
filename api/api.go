@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -21,7 +22,7 @@ type Response struct {
 	Context    string `json:"context,omitempty"`
 	Keys       []Key  `json:"keys,omitempty"`
 	KeyString  string `json:"keyString,omitempty"`
-	Base64Key  string `json:"base64Key,omitempty"`
+	HexKey     string `json:"hexKey,omitempty"`
 	Key        []int  `json:"key,omitempty"`
 	Base64Data string `json:"base64Data,omitempty"`
 }
@@ -33,23 +34,23 @@ func NewResponse() *Response {
 
 // Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
 func (o *Response) Fill() {
-	o.KeyString, o.Base64Key, o.Key = convertKey(o.key)
+	o.KeyString, o.HexKey, o.Key = convertKey(o.key)
 	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
 	o.Keys = make([]Key, len(o.keys))
 	for i := range o.Keys {
-		o.Keys[i].KeyString, o.Keys[i].Base64Key, o.Keys[i].Key = convertKey(o.keys[i])
+		o.Keys[i].KeyString, o.Keys[i].HexKey, o.Keys[i].Key = convertKey(o.keys[i])
 	}
 }
 
 // Key is the element type in the Response.Keys array
 type Key struct {
 	KeyString string `json:"keyString,omitempty"`
-	Base64Key string `json:"base64Key"`
+	HexKey    string `json:"hexKey"`
 	Key       []int  `json:"key"`
 }
 
 // convertKey takes a byte array and returns a string if all characters are printable (else ""), base64-encoded string and int array versions of key
-func convertKey(k []byte) (keyString, base64Key string, intArray []int) {
+func convertKey(k []byte) (keyString, hexKey string, intArray []int) {
 	// json.Marshall will base64-encode byte arrays instead of making a JSON array, so making an array of ints to get desired behavior in JSON output
 	intArray = make([]int, len(k))
 	allAscii := true
@@ -62,7 +63,8 @@ func convertKey(k []byte) (keyString, base64Key string, intArray []int) {
 	if allAscii {
 		keyString = string(k[:])
 	}
-	base64Key = base64.StdEncoding.EncodeToString(k)
+	// hexKey = base64.StdEncoding.EncodeToString(k)
+	hexKey = hex.EncodeToString(k)
 	return
 }
 
