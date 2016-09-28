@@ -17,11 +17,12 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 	- For Android or iOS, backup and copy the worlds via USB or file manager app (transfer via cloud drive or Bluetooth)
 	- The world folder will include a "level.dat" file and a "db" directory
 
-- `McpeTool api path/to/world` - Starts a web server on port 8080 allowing REST API access to the world. http://localhost:8080/api/v1/db/ will return the DB keys. Other handlers coming soon. Keys and data are base64 encoded.
-- `McpeTool keys path/to/world` - This will list the keys in the LevelDB world store in base64 format
-- `McpeTool get path/to/world base64key` - Returns the data for the given key in base64 format. Example: `McpeTool.exe get path/to/world fmxvY2FsX3BsYXllcg==` returns player data in base64 format.
+- `McpeTool api path/to/world` - Starts a web server on port 8080 allowing REST API access to the world. http://localhost:8080/api/v1/db/ will return the DB keys. Other handlers coming soon. Keys are hex encoded and data is base64 encoded.
+- `McpeTool keys path/to/world` - This will list the keys in the LevelDB world store in hex format
+- `McpeTool get path/to/world hexkey` - Returns the data for the given key in base64 format. Example: `McpeTool.exe get path/to/world 7e6c6f63616c5f706c61796572` returns player data in base64 format.
+	- `--dump` or `-d` flag outputs as hexdump instead
 - `put` is not yet implemented via command line because the data would be too big for parameters
-- `McpeTool delete path/to/world base64key` - Deletes the key/value pair for that key if present. Example: `McpeTool.exe delete path/to/world fmxvY2FsX3BsYXllcg==` deletes the player data. If you do this and play the world, you will spawn at the original location with no inventory.
+- `McpeTool delete path/to/world hexkey` - Deletes the key/value pair for that key if present. Example: `McpeTool.exe delete path/to/world 7e6c6f63616c5f706c61796572` deletes the player data. If you do this and play the world, you will spawn at the original location with no inventory.
 - `McpeTool` shows the help screen:
 
 		NAME:
@@ -35,9 +36,9 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 
 		COMMANDS:
 			 api, www      Open world and start http API. Hit control-c to exit.
-			 keys, k       Lists all keys in the database in base64 format. Be sure to include the path to the world folder, e.g. 'McpeTool keys path/to/world'
-			 get           Retruns the value of a key. Both key and value are in base64 format. e.g. 'McpeTool get path/to/world AAAAAAAAAAAw' for terrain chunk 0,0 or 'McpeTool get path/to/world fmxvY2FsX3BsYXllcg==' for ~local_player player data
-			 delete        Deletes a key and its value. The key is in base64 format. e.g. 'McpeTool delete path/to/world AAAAAAAAAAAw' to delete terrain chunk 0,0 or 'McpeTool delete path/to/world fmxvY2FsX3BsYXllcg==' to delete ~local_player player data
+			 keys, k       Lists all keys in the database in hex format. Be sure to include the path to the world folder, e.g. 'McpeTool keys path/to/world'
+			 get           Retruns the value of a key. Key is in hex format and value is in base64 format. e.g. 'McpeTool get path/to/world 000000000000000030' for terrain chunk 0,0 or 'McpeTool get path/to/world 7e6c6f63616c5f706c61796572' for ~local_player player data
+			 delete        Deletes a key and its value. The key is in base64 format. e.g. 'McpeTool delete path/to/world 000000000000000030' to delete terrain chunk 0,0 or 'McpeTool delete path/to/world 7e6c6f63616c5f706c61796572' to delete ~local_player player data
 			 develop, dev  Random thing the dev is working on
 			 help, h       Shows a list of commands or help for one command
 
