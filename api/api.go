@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -19,7 +20,6 @@ type Response struct {
 	keys       [][]byte
 	data       []byte
 	ApiVersion string `json:"apiVersion"`
-	Context    string `json:"context,omitempty"`
 	Keys       []Key  `json:"keys,omitempty"`
 	StringKey  string `json:"stringKey,omitempty"`
 	HexKey     string `json:"hexKey,omitempty"`
@@ -106,8 +106,29 @@ func Server(world *world.World) error {
 				return
 			}
 		case "PUT":
-			http.Error(w, "Method "+r.Method+" is under development and not yet operational", 405)
-			return
+			body, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, "Error reading body: "+err.Error(), 400)
+				return
+			}
+			inJson := Response{}
+			err = json.Unmarshal(body, &inJson)
+			if err != nil {
+				http.Error(w, "Error parsing body: "+err.Error(), 400)
+				return
+			}
+			data, err := base64.StdEncoding.DecodeString(inJson.Base64Data)
+			if err != nil {
+				http.Error(w, "Error decoding base64Data: "+err.Error(), 400)
+				return
+			}
+			err = world.Put(outData.key, data)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+			// http.Error(w, "Method "+r.Method+" is under development and not yet operational", 405)
+			// return
 		case "HEAD":
 			return
 		default:
