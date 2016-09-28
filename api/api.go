@@ -26,26 +26,29 @@ type Response struct {
 	Base64Data string `json:"base64Data,omitempty"`
 }
 
+// NewResponse initializes and returns a Response object
 func NewResponse() *Response {
 	return &Response{ApiVersion: apiVersion}
 }
 
-// Fill is used to conver the raw data to JSON-friendly data before returning to client
+// Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
 func (o *Response) Fill() {
 	o.KeyString, o.Base64Key, o.Key = convertKey(o.key)
+	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
 	o.Keys = make([]Key, len(o.keys))
 	for i := range o.Keys {
 		o.Keys[i].KeyString, o.Keys[i].Base64Key, o.Keys[i].Key = convertKey(o.keys[i])
 	}
 }
 
+// Key is the element type in the Response.Keys array
 type Key struct {
-	key       []byte
 	KeyString string `json:"keyString,omitempty"`
 	Base64Key string `json:"base64Key"`
 	Key       []int  `json:"key"`
 }
 
+// convertKey takes a byte array and returns a string if all characters are printable (else ""), base64-encoded string and int array versions of key
 func convertKey(k []byte) (keyString, base64Key string, intArray []int) {
 	// json.Marshall will base64-encode byte arrays instead of making a JSON array, so making an array of ints to get desired behavior in JSON output
 	intArray = make([]int, len(k))
@@ -63,25 +66,6 @@ func convertKey(k []byte) (keyString, base64Key string, intArray []int) {
 	return
 }
 
-// Fill is used to set the base64 and int array versions of the key
-func (k *Key) Fill() {
-	k.KeyString, k.Base64Key, k.Key = convertKey(k.key)
-}
-
-// // KeyList is the structure used for JSON replies to key list requests
-// type KeyList struct {
-// 	Keys []Key `json:"keys"`
-// }
-
-// // SetKeys is used to populate an array of Keys
-// func (k *KeyList) SetKeys(inKeyList [][]byte) {
-// 	outKeyList := make([]Key, len(inKeyList))
-// 	for i := 0; i < len(inKeyList); i++ {
-// 		outKeyList[i].SetKey(inKeyList[i])
-// 	}
-// 	k.Keys = append(k.Keys, outKeyList...)
-// }
-
 // Server is the http REST API server
 func Server(world *world.World) error {
 	http.HandleFunc("/api/v1/db/", func(w http.ResponseWriter, r *http.Request) {
@@ -92,9 +76,6 @@ func Server(world *world.World) error {
 			panic(err.Error())
 		}
 		outData.Fill()
-		// outData := KeyList{}
-		// outData.SetKeys(keylist)
-
 		outJson, err := json.MarshalIndent(outData, "", "  ")
 		// outJson, err := json.Marshal(keylist)
 		if err != nil {
@@ -102,7 +83,6 @@ func Server(world *world.World) error {
 		}
 		fmt.Fprintln(w, string(outJson[:]))
 	})
-
 	log.Fatal(http.ListenAndServe(":8080", nil))
 	return nil
 }
