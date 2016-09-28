@@ -58,6 +58,12 @@ func main() {
 		{
 			Name:  "get",
 			Usage: "Retruns the value of a key. Key is in hex format and value is in base64 format. e.g. 'McpeTool get path/to/world 000000000000000030' for terrain chunk 0,0 or 'McpeTool get path/to/world 7e6c6f63616c5f706c61796572' for ~local_player player data",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "dump, d",
+					Usage: "Display value as hexdump",
+				},
+			},
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(c.Args().First())
 				if err != nil {
@@ -72,7 +78,11 @@ func main() {
 				if err != nil {
 					return err
 				}
-				fmt.Println(base64.StdEncoding.EncodeToString(value))
+				if c.String("dump") == "true" {
+					fmt.Println(hex.Dump(value))
+				} else {
+					fmt.Println(base64.StdEncoding.EncodeToString(value))
+				}
 				return nil
 			},
 		},
