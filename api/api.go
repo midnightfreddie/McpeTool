@@ -23,7 +23,6 @@ type Response struct {
 	Keys       []Key  `json:"keys,omitempty"`
 	KeyString  string `json:"keyString,omitempty"`
 	HexKey     string `json:"hexKey,omitempty"`
-	Key        []int  `json:"key,omitempty"`
 	Base64Data string `json:"base64Data,omitempty"`
 }
 
@@ -34,11 +33,11 @@ func NewResponse() *Response {
 
 // Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
 func (o *Response) Fill() {
-	o.KeyString, o.HexKey, o.Key = convertKey(o.key)
+	o.KeyString, o.HexKey = convertKey(o.key)
 	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
 	o.Keys = make([]Key, len(o.keys))
 	for i := range o.Keys {
-		o.Keys[i].KeyString, o.Keys[i].HexKey, o.Keys[i].Key = convertKey(o.keys[i])
+		o.Keys[i].KeyString, o.Keys[i].HexKey = convertKey(o.keys[i])
 	}
 }
 
@@ -46,16 +45,12 @@ func (o *Response) Fill() {
 type Key struct {
 	KeyString string `json:"keyString,omitempty"`
 	HexKey    string `json:"hexKey"`
-	Key       []int  `json:"key"`
 }
 
-// convertKey takes a byte array and returns a string if all characters are printable (else ""), base64-encoded string and int array versions of key
-func convertKey(k []byte) (keyString, hexKey string, intArray []int) {
-	// json.Marshall will base64-encode byte arrays instead of making a JSON array, so making an array of ints to get desired behavior in JSON output
-	intArray = make([]int, len(k))
+// convertKey takes a byte array and returns a string if all characters are printable (else "")  hex-string-encoded versions of key
+func convertKey(k []byte) (keyString, hexKey string) {
 	allAscii := true
 	for i := range k {
-		intArray[i] = int(k[i])
 		if k[i] < 0x20 || k[i] > 0x7e {
 			allAscii = false
 		}
@@ -63,7 +58,6 @@ func convertKey(k []byte) (keyString, hexKey string, intArray []int) {
 	if allAscii {
 		keyString = string(k[:])
 	}
-	// hexKey = base64.StdEncoding.EncodeToString(k)
 	hexKey = hex.EncodeToString(k)
 	return
 }
