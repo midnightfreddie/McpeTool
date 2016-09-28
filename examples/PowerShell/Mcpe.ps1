@@ -1,8 +1,5 @@
-﻿[cmdletbinding()]
-param (
-    [string]$EndPoint = "http://localhost:8080",
-    [string]$ApiRoot = "/api/v1/db"
-)
+﻿$EndPoint = "http://localhost:8080"
+$ApiRoot = "/api/v1/db"
 
 function ConvertTo-Base64 {
     [cmdletbinding()]
@@ -61,9 +58,12 @@ function Invoke-McpeSpiralStaircase {
         $EvenYBlockID = 57,
         $HexKey = "000000000000000030"
     )
+    # Read chunk
     $Uri = $EndPoint + $ApiRoot + "/" + $HexKey
     $Result = Invoke-WebRequest -Uri $Uri -ErrorAction Stop
+    # The response body is a JSON object with a "base64Data" key holding the base64-encoded data. Decode it to [byte[]]
     $ChunkData = ConvertFrom-Base64 (($Result.Content | ConvertFrom-Json).base64Data)
+    # Set up a loop to add the pillar and spiral
     $RelativeX = 0
     $RelativeZ = 0
     for ($Y = 0; $Y -lt 128; $Y++) {
@@ -84,9 +84,11 @@ function Invoke-McpeSpiralStaircase {
             3 { $RelativeZ--; break }
         }
     }
+    # Create a JSON-encoded request body with the "base64Data" key holding the chunk data in base64 format
     $Body = New-Object psobject -Property @{
         base64Data = ConvertTo-Base64 $ChunkData
     } | ConvertTo-Json
+    # Write the chunk back to the database
     $Result = Invoke-WebRequest -Uri $Uri -Method Put -Body $Body
+    # Remember to stop the API server before copying/plaing the level again
 }
-
