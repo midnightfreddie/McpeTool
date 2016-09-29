@@ -4,7 +4,7 @@ A tool to read and write world data from Minecraft Pocket Edition.
 Currently it can read and write raw key/value data from command line or via HTTP REST API.
 For example, each chunk's terrain is stored in a single key/value pair, and the player is 
 
-Game-tested against 
+Game-tested against Minecraft Windows 10 Beta and Android Minecraft Pocket Edition.
 
 The author has no affiliation with Minecraft, Mojang or Microsoft.
 
@@ -17,10 +17,12 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 	- The world folder will include a "level.dat" file and a "db" directory
 
 - `McpeTool keys "<path/to/world>"` - This will list the keys in the LevelDB world store in hex format
-- `McpeTool get [--dump] "<path/to/world>" <hexkey>` - Returns the data for the given key in base64 format. Example: `McpeTool.exe get "<path/to/world>" 7e6c6f63616c5f706c61796572` returns player data in base64 format.
+- `McpeTool get [--dump] "<path/to/world>" <hexkey>` - Returns the data for the given key in base64 format
 	- `--dump` or `-d` flag outputs as hexdump instead
+	- Example: `McpeTool.exe get "<path/to/world>" 7e6c6f63616c5f706c61796572` returns player data
 - `McpeTool put "<path/to/world>" <hexkey>` - Puts a key/value pair in the database, replacing the previous value if present or creating the key if not.
-- `McpeTool delete "<path/to/world>" <hexkey>` - Deletes the key/value pair for that key if present. Example: `McpeTool.exe delete "<path/to/world>" 7e6c6f63616c5f706c61796572` deletes the player data. If you do this and play the world, you will spawn at the original location with no inventory.
+- `McpeTool delete "<path/to/world>" <hexkey>` - Deletes the key/value pair for that key if present
+	- Example: `McpeTool.exe delete "<path/to/world>" 7e6c6f63616c5f706c61796572` deletes the player data. If you do this and play the world, you will spawn at the original location with no inventory.
 - `McpeTool api "<path/to/world>"` - Starts a local HTTP server allowing REST API access to the MCPE world database. When done accessing the world, stop the server with control-C (or your OS'es equivalent BREAK)
 	- http://localhost:8080/api/v1/db/ will return the DB keys. Sample parital output:
 
