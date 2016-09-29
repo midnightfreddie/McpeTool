@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/midnightfreddie/McpeTool/api"
@@ -19,9 +20,10 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
-			Name:    "api",
-			Aliases: []string{"www"},
-			Usage:   "Open world and start http API. Hit control-c to exit.",
+			Name:      "api",
+			Aliases:   []string{"www"},
+			ArgsUsage: "\"<path/to/world>\"",
+			Usage:     "Open world and start http API at 127.0.0.1:8080 . Hit control-c to exit.",
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(c.Args().First())
 				if err != nil {
@@ -36,9 +38,10 @@ func main() {
 			},
 		},
 		{
-			Name:    "keys",
-			Aliases: []string{"k"},
-			Usage:   "Lists all keys in the database in hex format. Be sure to include the path to the world folder, e.g. 'McpeTool keys path/to/world'",
+			Name:      "keys",
+			Aliases:   []string{"k"},
+			ArgsUsage: "\"<path/to/world>\"",
+			Usage:     "Lists all keys in the database in hex string format.",
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(c.Args().First())
 				if err != nil {
@@ -56,8 +59,9 @@ func main() {
 			},
 		},
 		{
-			Name:  "get",
-			Usage: "Retruns the value of a key. Key is in hex format and value is in base64 format. e.g. 'McpeTool get path/to/world 000000000000000030' for terrain chunk 0,0 or 'McpeTool get path/to/world 7e6c6f63616c5f706c61796572' for ~local_player player data",
+			Name:      "get",
+			ArgsUsage: "\"<path/to/world>\" <key>",
+			Usage:     "Retruns the value of a key. Key is in hex string format and value is in base64 format.",
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name:  "dump, d",
@@ -87,8 +91,38 @@ func main() {
 			},
 		},
 		{
-			Name:  "delete",
-			Usage: "Deletes a key and its value. The key is in base64 format. e.g. 'McpeTool delete path/to/world 000000000000000030' to delete terrain chunk 0,0 or 'McpeTool delete path/to/world 7e6c6f63616c5f706c61796572' to delete ~local_player player data",
+			Name:      "put",
+			ArgsUsage: "\"<path/to/world>\" <key>",
+			Usage:     "Puts a key and its value into the database. The key is in hex string format. The value is in base64 format and provided via standard input.",
+			Action: func(c *cli.Context) error {
+				world, err := world.OpenWorld(c.Args().First())
+				key, err := hex.DecodeString(c.Args().Get(1))
+				if err != nil {
+					return err
+				}
+				if err != nil {
+					return err
+				}
+				defer world.Close()
+				base64Data, err := ioutil.ReadAll(os.Stdin)
+				if err != nil {
+					return err
+				}
+				value, err := base64.StdEncoding.DecodeString(string(base64Data[:]))
+				if err != nil {
+					return err
+				}
+				err = world.Put(key, value)
+				if err != nil {
+					return err
+				}
+				return nil
+			},
+		},
+		{
+			Name:      "delete",
+			ArgsUsage: "\"<path/to/world>\" <key>",
+			Usage:     "Deletes a key and its value. The key is in hex string format.",
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(c.Args().First())
 				if err != nil {
