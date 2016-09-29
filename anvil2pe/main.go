@@ -20,4 +20,5 @@ func main() {
 		panic(err.Error())
 	}
 	fmt.Println(region.X, region.Z)
+	fmt.Printf("%v\n", region.Chunks())
 }
