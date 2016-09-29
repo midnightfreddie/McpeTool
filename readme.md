@@ -133,8 +133,8 @@ The Android version (and presumably iOS version) do not seem to have export/impo
 		- LOCK - not for humans
 		- LOG - Human-readable LevelDB event log.
 		- MANIFEST - not for humans
-		- *.ldb - LevelDB data files
-		- *.log - *Not* a readable file. It's a binary DB log, not anything a human would be interested in reading.
+		- \*.ldb - LevelDB data files
+		- \*.log - *Not* a readable file. It's a binary DB log, not anything a human would be interested in reading.
 
 ### Minecraft data in LevelDB
 
