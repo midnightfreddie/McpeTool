@@ -12,7 +12,7 @@ import (
 	"github.com/midnightfreddie/McpeTool/world"
 )
 
-var apiVersion = "0.0"
+var apiVersion = "1.0"
 
 // Response is the default JSON response object
 type Response struct {
