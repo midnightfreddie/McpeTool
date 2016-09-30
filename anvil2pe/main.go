@@ -38,7 +38,7 @@ func main() {
 	chunks := region.Chunks()
 	anvilChunk := anvil.Chunk{}
 	// for i := range chunks {
-	for i := 0; i < 1; i++ {
+	for i := 1; i < 2; i++ {
 		success := region.ReadChunk(chunks[i][0], chunks[i][1], &anvilChunk)
 		if !success {
 			continue
@@ -47,7 +47,7 @@ func main() {
 		// fmt.Println(section)
 	}
 	peChunk := make([]byte, 83200)
-	// // Full brighness for blocks instead of full dark
+	// Full brighness for blocks instead of full dark
 	// for i := range peChunk[0xc000:0x14000] {
 	// 	peChunk[i] = 0xff
 	// }
@@ -58,7 +58,7 @@ func main() {
 		}
 		yBase := 16 * int(section.Y)
 		// fmt.Println(section.Blocks)
-		for y := 16 * yBase; y < 16*yBase+16; y++ {
+		for y := yBase; y < yBase+16; y++ {
 			for x := 0; x < 16; x++ {
 				for z := 0; z < 16; z++ {
 					_, aIdx := anvilOffset(x, y, z)
@@ -66,7 +66,7 @@ func main() {
 					// 	fmt.Println(sIdx, secIdx, x, y, z)
 					// 	panic("section mismatch")
 					// }
-					peChunk[peOffset(x, y+yBase, z)] = section.Blocks[aIdx]
+					peChunk[peOffset(x, y, z)] = section.Blocks[aIdx]
 				}
 			}
 		}
