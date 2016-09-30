@@ -28,7 +28,6 @@ func peOffset(x, y, z int) (offset int) {
 }
 
 func main() {
-	// fmt.Println("Get hype")
 	region, err := anvil.LoadRegion("region/r.-1.0.mca")
 	if err != nil {
 		panic(err.Error())
@@ -43,35 +42,31 @@ func main() {
 		if !success {
 			continue
 		}
-		// section := anvilChunk.Section(0, false)
-		// fmt.Println(section)
 	}
 	peChunk := make([]byte, 83200)
 	// Full brighness for blocks instead of full dark
-	// for i := range peChunk[0xc000:0x14000] {
-	// 	peChunk[i] = 0xff
-	// }
+	for i := 0xc000; i < 0x14000; i++ {
+		peChunk[i] = 0xff
+	}
+	// Grass color
+	grassColor := [...]byte{0x7, 0x7d, 0xac, 0x6c}
+	for i := 0x14100; i < 0x14500; i += 4 {
+		copy(peChunk[i:], grassColor[:])
+	}
 	for sIdx := range anvilChunk.Sections {
 		section := anvilChunk.Sections[sIdx]
 		if section.Y > 7 {
 			continue
 		}
 		yBase := 16 * int(section.Y)
-		// fmt.Println(section.Blocks)
 		for y := yBase; y < yBase+16; y++ {
 			for x := 0; x < 16; x++ {
 				for z := 0; z < 16; z++ {
 					_, aIdx := anvilOffset(x, y, z)
-					// if sIdx != secIdx {
-					// 	fmt.Println(sIdx, secIdx, x, y, z)
-					// 	panic("section mismatch")
-					// }
 					peChunk[peOffset(x, y, z)] = section.Blocks[aIdx]
 				}
 			}
 		}
 	}
-	// fmt.Println(peChunk)
 	fmt.Println(base64.StdEncoding.EncodeToString(peChunk))
-	// fmt.Println(len(anvilChunk.Sections))
 }
