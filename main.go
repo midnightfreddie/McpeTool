@@ -82,7 +82,7 @@ func main() {
 					return err
 				}
 				defer world.Close()
-				key, err := hex.DecodeString(c.Args().Get(1))
+				key, err := hex.DecodeString(c.Args().Get(0))
 				if err != nil {
 					return err
 				}
@@ -104,7 +104,7 @@ func main() {
 			Usage:     "Put a key/value into the DB. The base64-encoded value read from stdin.",
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(path)
-				key, err := hex.DecodeString(c.Args().Get(1))
+				key, err := hex.DecodeString(c.Args().Get(0))
 				if err != nil {
 					return err
 				}
@@ -137,7 +137,7 @@ func main() {
 					return err
 				}
 				defer world.Close()
-				key, err := hex.DecodeString(c.Args().Get(1))
+				key, err := hex.DecodeString(c.Args().Get(0))
 				if err != nil {
 					return err
 				}
