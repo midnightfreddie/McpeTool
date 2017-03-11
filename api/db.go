@@ -11,8 +11,8 @@ import (
 	"github.com/midnightfreddie/McpeTool/world"
 )
 
-// Response is the default JSON response object
-type Response struct {
+// DbResponse is the default JSON response object
+type DbResponse struct {
 	key        []byte
 	keys       [][]byte
 	data       []byte
@@ -23,13 +23,13 @@ type Response struct {
 	Base64Data string `json:"base64Data,omitempty"`
 }
 
-// NewResponse initializes and returns a Response object
-func NewResponse() *Response {
-	return &Response{ApiVersion: apiVersion}
+// NewDbResponse initializes and returns a Response object
+func NewDbResponse() *DbResponse {
+	return &DbResponse{ApiVersion: apiVersion}
 }
 
 // Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
-func (o *Response) Fill() {
+func (o *DbResponse) Fill() {
 	o.StringKey, o.HexKey = convertKey(o.key)
 	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
 	o.Keys = make([]Key, len(o.keys))
@@ -47,7 +47,7 @@ type Key struct {
 func dbApi(world *world.World, path string) {
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		var err error
-		outData := NewResponse()
+		outData := NewDbResponse()
 		relPath := r.URL.Path[len(path):]
 		if relPath != "" {
 			outData.key, err = hex.DecodeString(relPath)
@@ -91,7 +91,7 @@ func dbApi(world *world.World, path string) {
 				http.Error(w, "Error reading body: "+err.Error(), 400)
 				return
 			}
-			inJson := Response{}
+			inJson := DbResponse{}
 			err = json.Unmarshal(body, &inJson)
 			if err != nil {
 				http.Error(w, "Error parsing body: "+err.Error(), 400)
