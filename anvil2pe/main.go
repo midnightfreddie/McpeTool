@@ -7,6 +7,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/jteeuwen/mctools/anvil"
 	"github.com/midnightfreddie/McpeTool/world"
 )
@@ -30,11 +32,12 @@ func int2bytes(i int) [4]byte {
 }
 
 func main() {
-	region, err := anvil.LoadRegion("region/r.-1.0.mca")
+	// region, err := anvil.LoadRegion("region/r.0.-1.mca")
+	region, err := anvil.LoadRegion(os.Args[1])
 	if err != nil {
 		panic(err.Error())
 	}
-	world, err := world.OpenWorld("C:\\Users\\Jim.AD\\AppData\\Local\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe\\LocalState\\games\\com.mojang\\minecraftWorlds\\cNUBAJvzpQA=")
+	world, err := world.OpenWorld("C:\\Users\\Jim.AD\\AppData\\Local\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe\\LocalState\\games\\com.mojang\\minecraftWorlds\\SuEBAD-5BAA=")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -76,10 +79,14 @@ func main() {
 		}
 		// fmt.Println(base64.StdEncoding.EncodeToString(peChunk))
 		// fmt.Println(int2bytes(chunks[chunkIdx][0]), int2bytes(chunks[chunkIdx][1]))
+		// glass ceiling so I can see which chunks were inserted
+		for i := 0x70; i < 0x8000; i += 0x80 {
+			peChunk[i] = 20
+		}
 		peKey := make([]byte, 9)
-		tmp := int2bytes(chunks[chunkIdx][0] - 9)
+		tmp := int2bytes(chunks[chunkIdx][0])
 		copy(peKey, tmp[:])
-		tmp = int2bytes(chunks[chunkIdx][1] - 12)
+		tmp = int2bytes(chunks[chunkIdx][1])
 		copy(peKey[4:], tmp[:])
 		peKey[8] = 0x30
 		// fmt.Println(peKey)
