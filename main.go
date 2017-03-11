@@ -69,7 +69,7 @@ func main() {
 		{
 			Name:      "get",
 			ArgsUsage: "<key>",
-			Usage:     "Retruns a key's value in base64 format.",
+			Usage:     "Returns a key's value in base64 format.",
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name:  "dump, d",
