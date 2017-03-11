@@ -13,19 +13,28 @@ import (
 )
 
 func main() {
+	var path string
 	app := cli.NewApp()
 	app.Name = "MCPE Tool"
 	app.Version = "0.1.1"
 	app.Usage = "Reads and writes a Minecraft Pocket Edition world directory."
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:        "path, p",
+			Value:       ".",
+			Usage:       "`FILEPATH` of world",
+			EnvVar:      "MCPETOOL_WORLD",
+			Destination: &path,
+		},
+	}
 
 	app.Commands = []cli.Command{
 		{
-			Name:      "api",
-			Aliases:   []string{"www"},
-			ArgsUsage: "\"<path/to/world>\"",
-			Usage:     "Open world, start API at http://127.0.0.1:8080 . Control-c to exit.",
+			Name:    "api",
+			Aliases: []string{"www"},
+			Usage:   "Open world, start API at http://127.0.0.1:8080 . Control-c to exit.",
 			Action: func(c *cli.Context) error {
-				world, err := world.OpenWorld(c.Args().First())
+				world, err := world.OpenWorld(path)
 				if err != nil {
 					panic("error")
 				}
@@ -38,12 +47,11 @@ func main() {
 			},
 		},
 		{
-			Name:      "keys",
-			Aliases:   []string{"k"},
-			ArgsUsage: "\"<path/to/world>\"",
-			Usage:     "Lists all keys in the database.",
+			Name:    "keys",
+			Aliases: []string{"k"},
+			Usage:   "Lists all keys in the database.",
 			Action: func(c *cli.Context) error {
-				world, err := world.OpenWorld(c.Args().First())
+				world, err := world.OpenWorld(path)
 				if err != nil {
 					return err
 				}
@@ -60,7 +68,7 @@ func main() {
 		},
 		{
 			Name:      "get",
-			ArgsUsage: "\"<path/to/world>\" <key>",
+			ArgsUsage: "<key>",
 			Usage:     "Retruns a key's value in base64 format.",
 			Flags: []cli.Flag{
 				cli.BoolFlag{
@@ -69,7 +77,7 @@ func main() {
 				},
 			},
 			Action: func(c *cli.Context) error {
-				world, err := world.OpenWorld(c.Args().First())
+				world, err := world.OpenWorld(path)
 				if err != nil {
 					return err
 				}
@@ -92,10 +100,10 @@ func main() {
 		},
 		{
 			Name:      "put",
-			ArgsUsage: "\"<path/to/world>\" <key>",
+			ArgsUsage: "<key>",
 			Usage:     "Put a key/value into the DB. The base64-encoded value read from stdin.",
 			Action: func(c *cli.Context) error {
-				world, err := world.OpenWorld(c.Args().First())
+				world, err := world.OpenWorld(path)
 				key, err := hex.DecodeString(c.Args().Get(1))
 				if err != nil {
 					return err
@@ -121,10 +129,10 @@ func main() {
 		},
 		{
 			Name:      "delete",
-			ArgsUsage: "\"<path/to/world>\" <key>",
+			ArgsUsage: "<key>",
 			Usage:     "Deletes a key and its value.",
 			Action: func(c *cli.Context) error {
-				world, err := world.OpenWorld(c.Args().First())
+				world, err := world.OpenWorld(path)
 				if err != nil {
 					return err
 				}
