@@ -49,6 +49,26 @@ func main() {
 			},
 		},
 		{
+			Name:    "players",
+			Aliases: []string{"p"},
+			Usage:   "Lists player keys.",
+			Action: func(c *cli.Context) error {
+				world, err := world.OpenWorld(path)
+				if err != nil {
+					return err
+				}
+				defer world.Close()
+				keys, err := world.GetPlayerKeys()
+				if err != nil {
+					return err
+				}
+				for i := 0; i < len(keys); i++ {
+					fmt.Println(hex.EncodeToString(keys[i]))
+				}
+				return nil
+			},
+		},
+		{
 			Name:    "keys",
 			Aliases: []string{"k"},
 			Usage:   "Lists all keys in the database.",

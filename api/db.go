@@ -16,11 +16,11 @@ type DbResponse struct {
 	key        []byte
 	keys       [][]byte
 	data       []byte
-	ApiVersion string `json:"apiVersion"`
-	Keys       []Key  `json:"keys,omitempty"`
-	StringKey  string `json:"stringKey,omitempty"`
-	HexKey     string `json:"hexKey,omitempty"`
-	Base64Data string `json:"base64Data,omitempty"`
+	ApiVersion string      `json:"apiVersion"`
+	Keys       []world.Key `json:"keys,omitempty"`
+	StringKey  string      `json:"stringKey,omitempty"`
+	HexKey     string      `json:"hexKey,omitempty"`
+	Base64Data string      `json:"base64Data,omitempty"`
 }
 
 // NewDbResponse initializes and returns a Response object
@@ -32,9 +32,9 @@ func NewDbResponse() *DbResponse {
 func (o *DbResponse) Fill() {
 	o.StringKey, o.HexKey = convertKey(o.key)
 	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
-	o.Keys = make([]Key, len(o.keys))
+	o.Keys = make([]world.Key, len(o.keys))
 	for i := range o.Keys {
-		o.Keys[i].StringKey, o.Keys[i].HexKey = convertKey(o.keys[i])
+		o.Keys[i] = world.KeyInfo(o.keys[i])
 	}
 }
 

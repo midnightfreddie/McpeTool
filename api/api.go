@@ -10,6 +10,7 @@ import (
 
 var apiVersion = "1.0"
 
+// TODO: this moved to world/keys.go; remove its use from this package and delete
 // convertKey takes a byte array and returns a string if all characters are printable (else "")  hex-string-encoded versions of key
 func convertKey(k []byte) (stringKey, hexKey string) {
 	allAscii := true
