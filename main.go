@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"encoding/binary"
+
 	"github.com/midnightfreddie/McpeTool/api"
 	"github.com/midnightfreddie/McpeTool/world"
 	"github.com/urfave/cli"
@@ -75,6 +77,10 @@ func main() {
 					Name:  "dump, d",
 					Usage: "Display value as hexdump",
 				},
+				cli.BoolFlag{
+					Name:  "raw",
+					Usage: "Raw binary data for redirecting to file",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(path)
@@ -92,6 +98,8 @@ func main() {
 				}
 				if c.String("dump") == "true" {
 					fmt.Println(hex.Dump(value))
+				} else if c.String("raw") == "true" {
+					binary.Write(os.Stdout, binary.LittleEndian, value)
 				} else {
 					fmt.Println(base64.StdEncoding.EncodeToString(value))
 				}
