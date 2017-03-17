@@ -33,6 +33,7 @@ func Server(world *world.World) error {
 	dbApi(world, "/api/v1/db/")
 	worldApi(world, "/api/v1/world/")
 	playerApi(world, "/api/v1/player/")
+	levelApi(world, "/api/v1/level/")
 
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080", nil))
 	return nil

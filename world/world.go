@@ -4,6 +4,8 @@ import (
 	"errors"
 	"os"
 
+	"io/ioutil"
+
 	"github.com/midnightfreddie/goleveldb/leveldb"
 )
 
@@ -105,4 +107,11 @@ func (world *World) Put(key []byte, value []byte) error {
 func (world *World) Delete(key []byte) error {
 	err := world.db.Delete(key, nil)
 	return err
+}
+
+// GetLevelDat gets a the contents of level.dat
+func (world *World) GetLevelDat() ([]byte, error) {
+	// levelDatPath := world.filePath + "/level.dat"
+	value, err := ioutil.ReadFile(world.filePath + "/level.dat")
+	return value, err
 }
