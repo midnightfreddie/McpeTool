@@ -7,15 +7,13 @@ import (
 	"io/ioutil"
 	"os"
 
-	"encoding/binary"
-
 	"github.com/midnightfreddie/McpeTool/api"
 	"github.com/midnightfreddie/McpeTool/world"
 	"github.com/urfave/cli"
 )
 
 func main() {
-	var path string
+	var path, outFile string
 	app := cli.NewApp()
 	app.Name = "MCPE Tool"
 	app.Version = "0.1.1"
@@ -97,9 +95,14 @@ func main() {
 					Name:  "dump, d",
 					Usage: "Display value as hexdump",
 				},
-				cli.BoolFlag{
-					Name:  "raw",
-					Usage: "Raw binary data for redirecting to file",
+				// cli.BoolFlag{
+				// 	Name:  "raw",
+				// 	Usage: "Raw binary data for redirecting to file",
+				// },
+				cli.StringFlag{
+					Name:        "rawfile",
+					Usage:       "Raw binary to `FILE`",
+					Destination: &outFile,
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -118,8 +121,12 @@ func main() {
 				}
 				if c.String("dump") == "true" {
 					fmt.Println(hex.Dump(value))
-				} else if c.String("raw") == "true" {
-					binary.Write(os.Stdout, binary.LittleEndian, value)
+				} else if c.String("rawfile") != "" {
+					// binary.Write(os.Stdout, binary.LittleEndian, value)
+					err := ioutil.WriteFile(outFile, value, 0644)
+					if err != nil {
+						return err
+					}
 				} else {
 					fmt.Println(base64.StdEncoding.EncodeToString(value))
 				}
