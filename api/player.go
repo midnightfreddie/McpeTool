@@ -1,13 +1,15 @@
 package api
 
 import (
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"encoding/binary"
+
 	"github.com/midnightfreddie/McpeTool/world"
+	"github.com/midnightfreddie/nbt2json"
 )
 
 // PlayerResponse is the default JSON response object
@@ -19,7 +21,8 @@ type PlayerResponse struct {
 	Players    []Player `json:"players,omitempty"`
 	StringKey  string   `json:"stringKey,omitempty"`
 	HexKey     string   `json:"hexKey,omitempty"`
-	Base64Data string   `json:"base64Data,omitempty"`
+	// Base64Data string          `json:"base64Data,omitempty"`
+	NBT json.RawMessage `json:"nbt,omitempty"`
 }
 
 // NewPlayerResponse initializes and returns a Response object
@@ -36,7 +39,9 @@ type Player struct {
 // Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
 func (o *PlayerResponse) Fill() {
 	o.StringKey, o.HexKey = convertKey(o.key)
-	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
+	// o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
+	o.NBT, _ = nbt2json.Nbt2Json(o.data, binary.LittleEndian)
+	// o.NBT = string(outJson[:])
 	o.Players = make([]Player, len(o.keys))
 	for i := range o.Players {
 		o.Players[i].StringKey, o.Players[i].HexKey = convertKey(o.keys[i])
