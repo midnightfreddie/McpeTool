@@ -8,19 +8,24 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"encoding/binary"
+
 	"github.com/midnightfreddie/McpeTool/world"
+	"github.com/midnightfreddie/nbt2json"
 )
 
 // DbResponse is the default JSON response object
 type DbResponse struct {
-	key        []byte
-	keys       [][]byte
-	data       []byte
-	ApiVersion string      `json:"apiVersion"`
-	Keys       []world.Key `json:"keys,omitempty"`
-	StringKey  string      `json:"stringKey,omitempty"`
-	HexKey     string      `json:"hexKey,omitempty"`
-	Base64Data string      `json:"base64Data,omitempty"`
+	key          []byte
+	keys         [][]byte
+	data         []byte
+	ApiVersion   string          `json:"apiVersion"`
+	Keys         []world.Key     `json:"keys,omitempty"`
+	StringKey    string          `json:"stringKey,omitempty"`
+	HexKey       string          `json:"hexKey,omitempty"`
+	Base64Data   string          `json:"base64Data,omitempty"`
+	Nbt2JsonData json.RawMessage `json:"nbt2jsonData,omitempty"`
+	// HexDumpData  string          `json:"hexDumpData,omitempty"`
 }
 
 // NewDbResponse initializes and returns a Response object
@@ -32,6 +37,9 @@ func NewDbResponse() *DbResponse {
 func (o *DbResponse) Fill() {
 	o.StringKey, o.HexKey = convertKey(o.key)
 	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
+	// Not checking error...if it works, field is populated. If not, field is nil. That works.
+	o.Nbt2JsonData, _ = nbt2json.Nbt2Json(o.data, binary.LittleEndian)
+	// o.HexDumpData = hex.Dump(o.data)
 	o.Keys = make([]world.Key, len(o.keys))
 	for i := range o.Keys {
 		o.Keys[i] = world.KeyInfo(o.keys[i])
