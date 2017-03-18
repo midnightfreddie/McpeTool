@@ -20,9 +20,10 @@ type DbResponse struct {
 	keys         [][]byte
 	data         []byte
 	ApiVersion   string          `json:"apiVersion"`
-	Keys         []world.Key     `json:"keys,omitempty"`
+	Keys         []Key           `json:"keys,omitempty"`
 	StringKey    string          `json:"stringKey,omitempty"`
 	HexKey       string          `json:"hexKey,omitempty"`
+	Base64Key    string          `json:"base64Key,omitempty"`
 	Base64Data   string          `json:"base64Data,omitempty"`
 	Nbt2JsonData json.RawMessage `json:"nbt2jsonData,omitempty"`
 	// HexDumpData  string          `json:"hexDumpData,omitempty"`
@@ -34,15 +35,19 @@ func NewDbResponse() *DbResponse {
 }
 
 // Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
-func (o *DbResponse) Fill() {
-	o.StringKey, o.HexKey = convertKey(o.key)
+func (o *DbResponse) Fill(urlPrefix string) {
+	o.StringKey, o.HexKey, o.Base64Key = convertKey(o.key)
 	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
 	// Not checking error...if it works, field is populated. If not, field is nil. That works.
 	o.Nbt2JsonData, _ = nbt2json.Nbt2Json(o.data, binary.LittleEndian)
 	// o.HexDumpData = hex.Dump(o.data)
-	o.Keys = make([]world.Key, len(o.keys))
+	o.Keys = make([]Key, len(o.keys))
 	for i := range o.Keys {
-		o.Keys[i] = world.KeyInfo(o.keys[i])
+		// o.Keys[i] = world.KeyInfo(o.keys[i])
+		o.Keys[i].StringKey, o.Keys[i].HexKey, o.Keys[i].Base64Key = convertKey(o.keys[i])
+		if urlPrefix != "" && o.Keys[i].HexKey != "" {
+			o.Keys[i].Url = urlPrefix + o.Keys[i].HexKey
+		}
 	}
 }
 
@@ -50,6 +55,8 @@ func (o *DbResponse) Fill() {
 type Key struct {
 	StringKey string `json:"stringKey,omitempty"`
 	HexKey    string `json:"hexKey"`
+	Base64Key string `json:"base64Key,omitempty"`
+	Url       string `json:"url,omitempty"`
 }
 
 func dbApi(world *world.World, path string) {
@@ -133,7 +140,8 @@ func dbApi(world *world.World, path string) {
 			http.Error(w, "Method "+r.Method+" not supported", 405)
 			return
 		}
-		outData.Fill()
+		// TODO: URL prefix should be a variable and configurable. Or perhaps pulled from server.
+		outData.Fill("http://127.0.0.1:8080" + r.URL.Path[:len(path)])
 		outJson, err := json.MarshalIndent(outData, "", "  ")
 		// outJson, err := json.Marshal(keylist)
 		if err != nil {

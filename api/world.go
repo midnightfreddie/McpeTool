@@ -29,11 +29,11 @@ func NewWorldResponse() *WorldResponse {
 
 // Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
 func (o *WorldResponse) Fill() {
-	o.StringKey, o.HexKey = convertKey(o.key)
+	o.StringKey, o.HexKey, _ = convertKey(o.key)
 	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
 	o.Keys = make([]Key, len(o.keys))
 	for i := range o.Keys {
-		o.Keys[i].StringKey, o.Keys[i].HexKey = convertKey(o.keys[i])
+		o.Keys[i].StringKey, o.Keys[i].HexKey, _ = convertKey(o.keys[i])
 	}
 }
 

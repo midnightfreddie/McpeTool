@@ -38,13 +38,13 @@ type Player struct {
 
 // Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
 func (o *PlayerResponse) Fill() {
-	o.StringKey, o.HexKey = convertKey(o.key)
+	o.StringKey, o.HexKey, _ = convertKey(o.key)
 	// o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
 	o.NBT, _ = nbt2json.Nbt2Json(o.data, binary.LittleEndian)
 	// o.NBT = string(outJson[:])
 	o.Players = make([]Player, len(o.keys))
 	for i := range o.Players {
-		o.Players[i].StringKey, o.Players[i].HexKey = convertKey(o.keys[i])
+		o.Players[i].StringKey, o.Players[i].HexKey, _ = convertKey(o.keys[i])
 	}
 }
 

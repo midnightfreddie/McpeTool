@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/hex"
 	"log"
 	"net/http"
@@ -11,8 +12,9 @@ import (
 var apiVersion = "1.0"
 
 // TODO: this moved to world/keys.go; remove its use from this package and delete
+// ACTUALLY: No. This package shouldn't rely on world/keys.go for its formatting
 // convertKey takes a byte array and returns a string if all characters are printable (else "")  hex-string-encoded versions of key
-func convertKey(k []byte) (stringKey, hexKey string) {
+func convertKey(k []byte) (stringKey, hexKey, base64Key string) {
 	allAscii := true
 	for i := range k {
 		if k[i] < 0x20 || k[i] > 0x7e {
@@ -23,6 +25,7 @@ func convertKey(k []byte) (stringKey, hexKey string) {
 		stringKey = string(k[:])
 	}
 	hexKey = hex.EncodeToString(k)
+	base64Key = base64.StdEncoding.EncodeToString(k)
 	return
 }
 
