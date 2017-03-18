@@ -5,7 +5,7 @@
 </head>
 <body>
   Under construction
-  <div ng-repeat="key in world.keyList">{{ key }}</div>
+  <div ng-repeat="key in world.players">{{ key }}</div>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.3/angular.min.js"></script>
   <script>
     (function() {
@@ -20,13 +20,36 @@
       function World($http) {
         var vm = this;
         vm.keyList = []
+        vm.otherKeys
+        // TODO: add matching for ^player_ and, if necessary, ^dimension
+        vm.nonChunkKeys = [
+          '~local_player',
+          'mVillages',
+          'AutonomousEntities',
+          'BiomeData',
+          'Overworld',
+          'dimension0',
+          'portals'
+        ]
 
         vm.RefreshKeys = function() {
-          vm.keyList=['Hi', 'there'];
           $http.get('http://127.0.0.1:8080/api/v1/db/')
-            .then(function(response){
-              vm.keyList = response.data.keys
-            })
+            .then(vm.RefreshKeysSuccess, vm.HttpFail)
+        }
+
+        vm.RefreshKeysSuccess = function(response) {
+          vm.keyList = response.data.keys
+          vm.players = {}
+          vm.chunks = {}
+          vm.keyList.forEach(function(e) {
+            if (vm.nonChunkKeys.includes(e.stringKey)) {
+              vm.players[e.stringKey] = e
+            }
+          })
+        }
+
+        vm.HttpFail = function(response) {
+          console.error('http failure', response.status, response.statustext, response.data)
         }
 
         vm.RefreshKeys();
