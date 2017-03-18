@@ -1,0 +1,33 @@
+<!doctype html>
+<html ng-app="mcpeTool" ng-controller="World as world">
+<head>
+  <title>World Explorer for MCPE</title>
+</head>
+<body>
+  Under construction
+  <div ng-repeat="key in world.keyList">{{ key }}</div>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+  <script>
+    (function() {
+      'use strict';
+
+      angular
+        .module('mcpeTool', [])
+        .controller('World', World);
+
+       World.$inject = ['$http'];
+
+      function World($http) {
+        var vm = this;
+        vm.keyList = []
+
+        vm.RefreshKeys = function() {
+          vm.keyList=['Hi', 'there'];
+        }
+
+        vm.RefreshKeys();
+      }
+    })();
+  </script>
+</body>
+</html>
