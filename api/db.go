@@ -55,6 +55,16 @@ type Key struct {
 func dbApi(world *world.World, path string) {
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		var err error
+
+		// Set Origin headers for CORS
+		// yoinked from http://stackoverflow.com/questions/12830095/setting-http-headers-in-golang Matt Bucci's answer
+		// Could/should go in a Handle not HandleFunc, but I'm not yet quite sure how to do that with the default mux
+		if origin := r.Header.Get("Origin"); origin != "" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+			w.Header().Set("Access-Control-Allow-Headers",
+				"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		}
 		outData := NewDbResponse()
 		relPath := r.URL.Path[len(path):]
 		if relPath != "" {
