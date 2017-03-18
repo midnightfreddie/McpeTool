@@ -9,15 +9,20 @@ import (
 
 // Key is the default JSON response object
 type Key struct {
-	key       []byte
-	keys      [][]byte
-	Type      string `json:"type,omitempty"`
-	StringKey string `json:"stringKey,omitempty"`
-	HexKey    string `json:"hexKey,omitempty"`
-	X         int32  `json:"x,omitempty"`
-	Z         int32  `json:"z,omitempty"`
-	Y         int32  `json:"y,omitempty"`
-	Dimension int32  `json:"dimension,omitempty"`
+	key         []byte
+	keys        [][]byte
+	Type        string      `json:"type,omitempty"`
+	StringKey   string      `json:"stringKey,omitempty"`
+	HexKey      string      `json:"hexKey,omitempty"`
+	ChunkCoords interface{} `json:chunkCoords,omitempty`
+}
+
+// ChunkCoords is the chunk coordinates. SubChunk is an interface so it can be omitted in JSON if irrelevant but present if 0.
+type ChunkCoords struct {
+	Dimension int32       `json:"dimension"`
+	X         int32       `json:"x"`
+	Z         int32       `json:"z"`
+	SubChunk  interface{} `json:"subChunk,omitempty"`
 }
 
 // convertKey takes a byte array and returns a string if all characters are printable (else "")  hex-string-encoded versions of key
@@ -93,12 +98,14 @@ func KeyInfo(key []byte) Key {
 	// chunk-based keys
 	// legacy terrain keys
 	if (len(key) == 9) || (len(key)) == 10 || (len(key) == 13) || (len(key)) == 14 {
-		outkey.X, outkey.Z, _ = keyToCoords(key)
+		chunkCoords := ChunkCoords{}
+		chunkCoords.X, chunkCoords.Z, _ = keyToCoords(key)
 		var dimension int32
 		if (len(key) == 13) || (len(key) == 14) {
 			dimension, _ = byteToInt32(key[8:12])
 		}
-		outkey.Dimension = dimension
+		chunkCoords.Dimension = dimension
+		outkey.ChunkCoords = chunkCoords
 		switch key[len(key)-1] {
 		case 0x2d:
 			outkey.Type = "data2d"
@@ -124,25 +131,28 @@ func KeyInfo(key []byte) Key {
 		case 0x76:
 			outkey.Type = "version"
 		default:
-			outkey.Dimension = 0
-			outkey.Dimension = 0
-			outkey.Z = 0
+			outkey.ChunkCoords = ""
 		}
 	}
 	if (len(key) == 10) || (len(key) == 14) {
+		chunkCoords := ChunkCoords{}
 		var dimension int32
-		outkey.X, outkey.Z, outkey.Y = keyToCoords(key)
+		chunkCoords.X, chunkCoords.Z, chunkCoords.SubChunk = keyToCoords(key)
 		if (len(key) == 13) || (len(key) == 14) {
 			dimension, _ = byteToInt32(key[8:12])
 		}
-		outkey.Dimension = dimension
+		chunkCoords.Dimension = dimension
+		outkey.ChunkCoords = chunkCoords
 		switch key[len(key)-2] {
 		case 0x2f:
 			outkey.Type = "terrain"
+
 		default:
-			outkey.Dimension = 0
-			outkey.Dimension = 0
-			outkey.Z = 0
+			outkey.ChunkCoords = ""
+			// wut? don't recall what this was about
+			// 	outkey.ChunkCoords.Dimension = 0
+			// 	outkey.ChunkCoords.Dimension = 0
+			// 	outkey.ChunkCoords.Z = 0
 
 		}
 	}
