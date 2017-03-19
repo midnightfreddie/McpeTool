@@ -6,13 +6,13 @@
 <body>
   Under construction
   <h2>Players</h2>
-  <div ng-repeat="key in world.players">{{ key }}</div>
+  <div ng-repeat="(key, value) in world.players">{{ key }}</div>
   <h2>Known Keys</h2>
-  <div ng-repeat="key in world.knownKeys">{{ key }}</div>
+  <div ng-repeat="(key, value) in world.knownKeys">{{ key }}</div>
   <h2>Unknown Keys</h2>
-  <div ng-repeat="key in world.unKnownKeys">{{ key }}</div>
+  <div ng-repeat="(key, value) in world.unKnownKeys">{{ key }}</div>
   <h2>Chunks</h2>
-  <div ng-repeat="key in world.chunks">{{ key }}</div>
+  <div ng-repeat="(key, value) in world.chunks"><div style="float:left;width:10em;">{{ key }}</div><div>{{ value }}</div></div>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.3/angular.min.js"></script>
   <script>
     (function() {
@@ -26,8 +26,8 @@
 
       function World($http) {
         var vm = this;
-        vm.keyList = []
-        vm.otherKeys
+        vm.keyList = [];
+        vm.otherKeys;
         vm.nonChunkKeys = [
           'mVillages',
           'AutonomousEntities',
@@ -35,11 +35,11 @@
           'Overworld',
           'dimension0',
           'portals'
-        ]
+        ];
 
         vm.RefreshKeys = function() {
           $http.get('http://127.0.0.1:8080/api/v1/db/')
-            .then(vm.RefreshKeysSuccess, vm.HttpFail)
+            .then(vm.RefreshKeysSuccess, vm.HttpFail);
         }
 
         vm.RefreshKeysSuccess = function(response) {
@@ -57,13 +57,34 @@
             } else if (chunk = e.hexKey.match(/^([\da-f]{8})([\da-f]{8})([\da-f]{8})?([\da-f]{2})([\da-f]{2})?$/i)) {
             // } else if (/^([\da-f]{4})/i.test(e.hexKey)) {
               var hexKey = chunk[1] + chunk[2] + (chunk[3] || "");
-              vm.chunks[hexKey] = e;
+              if (! vm.chunks[hexKey]) {
+                // var x = new Array(4);
+                // var z = new Array(4);
+                var bytesKey = atob(e.base64Key);
+                var byteArrayKey = new Array(bytesKey.length);
+                // byteArrayKey.forEach(function(e, i) {
+                //   e = bytesKey[i];
+                // });
+                for (var i=0; i < bytesKey.length; i++) {
+                  byteArrayKey[i] = bytesKey.charCodeAt(i);
+                  // console.log("Hi");
+                }
+                console.log(byteArrayKey);
+                // x = parseInt(chunk[1], 16);
+                // if (x >= 2**32 / 2) { x = 5555 }
+                vm.chunks[hexKey] = {
+                  dimension: chunk[3] ? new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(8,12))[0] : 0,
+                  "x": new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(0,4))[0],
+                  "z": new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(4,8))[0]
+                }
+              }
+              // vm.chunks[hexKey] = e;
               // console.log(hexKey);
             } else {
               vm.unKnownKeys[e.hexKey] = e;
             }
           });
-          console.log(vm.chunks);
+          // console.log(vm.chunks);
         }
 
         vm.HttpFail = function(response) {
