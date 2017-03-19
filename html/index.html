@@ -50,41 +50,36 @@
           vm.knownKeys = {};
           vm.unKnownKeys = {};
           vm.keyList.forEach(function(e) {
+            // regex to match player string keys TODO: use hex key match instead?
             if (/^(~local_player|^player_)/.test(e.stringKey)) {
               vm.players[e.stringKey] = e;
             } else if (vm.nonChunkKeys.includes(e.stringKey)) {
               vm.knownKeys[e.stringKey] = e;
+            // matches 9, 10, 13 or 14 hex digits and captures matches
+            // 1: x, 2: z, 3: (if present) dimension, 4: tag / data type, 5: subchunk
             } else if (chunk = e.hexKey.match(/^([\da-f]{8})([\da-f]{8})([\da-f]{8})?([\da-f]{2})([\da-f]{2})?$/i)) {
-            // } else if (/^([\da-f]{4})/i.test(e.hexKey)) {
+              // Currently using x, z, and dimension (if present) portion of key to identify the chunk
               var hexKey = chunk[1] + chunk[2] + (chunk[3] || "");
+              // Create key if not present
               if (! vm.chunks[hexKey]) {
-                // var x = new Array(4);
-                // var z = new Array(4);
+                // base64-decode the binary key
                 var bytesKey = atob(e.base64Key);
+                // intermediate step to create array so buffer.slice is available
                 var byteArrayKey = new Array(bytesKey.length);
-                // byteArrayKey.forEach(function(e, i) {
-                //   e = bytesKey[i];
-                // });
+                // populate the array
                 for (var i=0; i < bytesKey.length; i++) {
                   byteArrayKey[i] = bytesKey.charCodeAt(i);
-                  // console.log("Hi");
                 }
-                console.log(byteArrayKey);
-                // x = parseInt(chunk[1], 16);
-                // if (x >= 2**32 / 2) { x = 5555 }
                 vm.chunks[hexKey] = {
                   dimension: chunk[3] ? new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(8,12))[0] : 0,
                   "x": new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(0,4))[0],
                   "z": new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(4,8))[0]
                 }
               }
-              // vm.chunks[hexKey] = e;
-              // console.log(hexKey);
             } else {
               vm.unKnownKeys[e.hexKey] = e;
             }
           });
-          // console.log(vm.chunks);
         }
 
         vm.HttpFail = function(response) {
