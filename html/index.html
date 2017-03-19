@@ -43,27 +43,31 @@
         }
 
         vm.RefreshKeysSuccess = function(response) {
-          vm.keyList = response.data.keys
-          vm.players = {}
-          vm.chunks = {}
-          vm.knownKeys = {}
-          vm.unKnownKeys = {}
+          var chunk;
+          vm.keyList = response.data.keys;
+          vm.players = {};
+          vm.chunks = {};
+          vm.knownKeys = {};
+          vm.unKnownKeys = {};
           vm.keyList.forEach(function(e) {
             if (/^(~local_player|^player_)/.test(e.stringKey)) {
-              vm.players[e.stringKey] = e
+              vm.players[e.stringKey] = e;
             } else if (vm.nonChunkKeys.includes(e.stringKey)) {
-              vm.knownKeys[e.stringKey] = e
-            } else if (/^([\da-f]{8})([\da-f]{8})([\da-f]{8})?([\da-f]{2})([\da-f]{2})?$/.test(e.hexKey)) {
+              vm.knownKeys[e.stringKey] = e;
+            } else if (chunk = e.hexKey.match(/^([\da-f]{8})([\da-f]{8})([\da-f]{8})?([\da-f]{2})([\da-f]{2})?$/i)) {
             // } else if (/^([\da-f]{4})/i.test(e.hexKey)) {
-              vm.chunks[e.hexKey] = e
+              var hexKey = chunk[1] + chunk[2] + (chunk[3] || "");
+              vm.chunks[hexKey] = e;
+              // console.log(hexKey);
             } else {
-              vm.unKnownKeys[e.hexKey] = e
+              vm.unKnownKeys[e.hexKey] = e;
             }
-          })
+          });
+          console.log(vm.chunks);
         }
 
         vm.HttpFail = function(response) {
-          console.error('http failure', response.status, response.statustext, response.data)
+          console.error('http failure', response.status, response.statustext, response.data);
         }
 
         vm.RefreshKeys();
