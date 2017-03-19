@@ -16,7 +16,7 @@ import (
 type Level struct {
 	ApiVersion string       `json:"apiVersion"`
 	FilePath   string       `json:"filePath,omitempty"`
-	LevelDat   LevelDatInfo `json:levelDat",omitempty"`
+	LevelDat   LevelDatInfo `json:"levelDat,omitempty"`
 }
 
 // LevelDatInfo represents the level.dat file
