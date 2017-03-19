@@ -73,8 +73,29 @@
                 vm.chunks[hexKey] = {
                   dimension: chunk[3] ? new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(8,12))[0] : 0,
                   "x": new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(0,4))[0],
-                  "z": new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(4,8))[0]
+                  "z": new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(4,8))[0],
+                  subChunks: [],
+                  unknown: []
                 }
+              }
+              switch (chunk[4]) {
+                case '2d':
+                  vm.chunks[hexKey]['data2d'] = e.url;
+                  break;
+                case '2f':
+                  vm.chunks[hexKey].subChunks.push(e.url);
+                  break;
+                case '32':
+                  vm.chunks[hexKey]['entities'] = e.url;
+                  break;
+                case '36':
+                  vm.chunks[hexKey]['0x36'] = e.url;
+                  break;
+                case '76':
+                  vm.chunks[hexKey]['version'] = e.url;
+                  break;
+                default:
+                  vm.chunks[hexKey].unknown.push(e.url);
               }
             } else {
               vm.unKnownKeys[e.hexKey] = e;
