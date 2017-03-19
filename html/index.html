@@ -5,7 +5,14 @@
 </head>
 <body>
   Under construction
+  <h2>Players</h2>
   <div ng-repeat="key in world.players">{{ key }}</div>
+  <h2>Known Keys</h2>
+  <div ng-repeat="key in world.knownKeys">{{ key }}</div>
+  <h2>Unknown Keys</h2>
+  <div ng-repeat="key in world.unKnownKeys">{{ key }}</div>
+  <h2>Chunks</h2>
+  <div ng-repeat="key in world.chunks">{{ key }}</div>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.3/angular.min.js"></script>
   <script>
     (function() {
@@ -21,9 +28,7 @@
         var vm = this;
         vm.keyList = []
         vm.otherKeys
-        // TODO: add matching for ^player_ and, if necessary, ^dimension
         vm.nonChunkKeys = [
-          '~local_player',
           'mVillages',
           'AutonomousEntities',
           'BiomeData',
@@ -41,9 +46,18 @@
           vm.keyList = response.data.keys
           vm.players = {}
           vm.chunks = {}
+          vm.knownKeys = {}
+          vm.unKnownKeys = {}
           vm.keyList.forEach(function(e) {
-            if (vm.nonChunkKeys.includes(e.stringKey)) {
+            if (/^(~local_player|^player_)/.test(e.stringKey)) {
               vm.players[e.stringKey] = e
+            } else if (vm.nonChunkKeys.includes(e.stringKey)) {
+              vm.knownKeys[e.stringKey] = e
+            } else if (/^([\da-f]{8})([\da-f]{8})([\da-f]{8})?([\da-f]{2})([\da-f]{2})?$/.test(e.hexKey)) {
+            // } else if (/^([\da-f]{4})/i.test(e.hexKey)) {
+              vm.chunks[e.hexKey] = e
+            } else {
+              vm.unKnownKeys[e.hexKey] = e
             }
           })
         }
