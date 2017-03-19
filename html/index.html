@@ -9,10 +9,13 @@
   <div ng-repeat="(key, value) in world.players">{{ key }}</div>
   <h2>Known Keys</h2>
   <div ng-repeat="(key, value) in world.knownKeys">{{ key }}</div>
+  <h2>Chunk Entity Lists</h2>
+  <div>Not for display; list is for parsing all entities</div>
+  <div ng-repeat="entityChunk in world.entityChunkList">{{ entityChunk }}</div>
   <h2>Unknown Keys</h2>
   <div ng-repeat="(key, value) in world.unKnownKeys">{{ key }}</div>
   <h2>Chunks</h2>
-  <div ng-repeat="(key, value) in world.chunks"><div style="float:left;width:10em;">{{ key }}</div><div>{{ value }}</div></div>
+  <div ng-repeat="(key, value) in world.chunks"><h3>{{ key }} <span ng-if="value.spawn">Spawn chunk</span></h3><div ng-repeat="(k, v) in value">{{ k }}: {{ v }}</div></div>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.3/angular.min.js"></script>
   <script>
     (function() {
@@ -49,6 +52,7 @@
           vm.chunks = {};
           vm.knownKeys = {};
           vm.unKnownKeys = {};
+          vm.entityChunkList = [];
           vm.keyList.forEach(function(e) {
             // regex to match player string keys TODO: use hex key match instead?
             if (/^(~local_player|^player_)/.test(e.stringKey)) {
@@ -87,6 +91,7 @@
                   break;
                 case '32':
                   vm.chunks[hexKey]['entities'] = e.url;
+                  vm.entityChunkList.push(e.url);
                   break;
                 case '36':
                   vm.chunks[hexKey]['0x36'] = e.url;
@@ -101,11 +106,53 @@
               vm.unKnownKeys[e.hexKey] = e;
             }
           });
+          vm.GetPlayerBeds();
+          vm.GetSpawnPoint();
+        }
+
+        vm.GetPlayerBeds = function() {
+          Object.keys(vm.players).forEach(function(e) {
+            $http.get(vm.players[e].url)
+              .then(vm.GetPlayerBedsSuccess, vm.HttpFail);
+          });
+        }
+
+        // NOTE: problem: I don't see where there is verification a bed exists
+        vm.GetPlayerBedsSuccess = function(response) {
+          var p = vm.players[response.data.stringKey]
+          p['nbt'] = response.data.nbt2jsonData;
+          p.nbt.value.forEach(function (e) {
+            if (/^BedPosition/.test(e.name)) {
+              p["bedChunk" + e.name.slice(-1)] = Math.floor(e.value / 16);
+              // console.log(p["bedChunk" + e.name.slice(-1)]);
+            }
+          });
+        }
+
+        vm.GetSpawnPoint = function() {
+          $http.get('http://127.0.0.1:8080/api/v1/level/')
+            .then(vm.GetSpawnPointSuccess, vm.HttpFail);
+        }
+
+        vm.GetSpawnPointSuccess = function (response) {
+          var coords = { x:0, z:0 };
+          response.data.levelDat.nbt.value.forEach(function (e) {
+            if (/^Spawn[XYZ]$/.test(e.name)) {
+              coords[e.name.slice(-1).toLowerCase] = Math.floor(e.value / 16);
+            }
+          });
+          Object.keys(vm.chunks).forEach(function (e) {
+            var c = vm.chunks[e];
+            if (c.x == coords.x && c.z == coords.z) {
+              c["spawn"] = true;
+            }
+          });
         }
 
         vm.HttpFail = function(response) {
           console.error('http failure', response.status, response.statustext, response.data);
         }
+
 
         vm.RefreshKeys();
       }
