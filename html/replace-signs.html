@@ -1,0 +1,59 @@
+<!doctype html>
+<html ng-app="mcpeTool" ng-controller="World as world">
+<head>
+  <title>Sign Replacer for MCPE</title>
+</head>
+<body>
+  Under construction
+  <h2>Block Entities</h2>
+  <div ng-repeat="blockEntity in world.blockEntities">{{ blockEntity }}<hr></div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.3/angular.min.js"></script>
+  <script>
+    (function() {
+      'use strict';
+
+      angular
+        .module('mcpeTool', [])
+        .controller('World', World);
+
+       World.$inject = ['$http'];
+
+      function World($http) {
+        var vm = this;
+        vm.keyList = [];
+        vm.blockEntities = [];
+
+        vm.RefreshKeys = function() {
+          $http.get('http://127.0.0.1:8080/api/v1/db/')
+            .then(vm.RefreshKeysSuccess, vm.HttpFail);
+        }
+
+        vm.RefreshKeysSuccess = function(response) {
+          vm.keyList = response.data.keys;
+          vm.keyList.forEach(function(e) {
+              if (/31$/.test(e.hexKey)) {
+                  $http.get(e.url)
+                    .then(vm.AddBlockEntities, vm.HttpFail);
+              }
+          });
+        }
+        vm.AddBlockEntities = function(response) {
+            vm.blockEntities.push(response.data.nbt2jsonData);
+
+            // response.data.nbt2jsonData.value.forEach(function(e) {
+            //     console.log(e);
+            //     vm.blockEntities.push(e);
+            // });
+        }
+
+        vm.HttpFail = function(response) {
+          console.error('http failure', response.status, response.statustext, response.data);
+        }
+
+        vm.RefreshKeys();
+      }
+    })();
+  </script>
+</body>
+</html>
