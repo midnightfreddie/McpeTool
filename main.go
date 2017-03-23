@@ -36,12 +36,12 @@ func main() {
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(path)
 				if err != nil {
-					panic("error")
+					return err
 				}
 				defer world.Close()
 				err = api.Server(&world)
 				if err != nil {
-					panic("error")
+					return err
 				}
 				return nil
 			},

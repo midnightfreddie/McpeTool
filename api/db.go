@@ -122,10 +122,19 @@ func dbApi(world *world.World, path string) {
 				http.Error(w, "Error parsing body: "+err.Error(), 400)
 				return
 			}
-			data, err := base64.StdEncoding.DecodeString(inJson.Base64Data)
-			if err != nil {
-				http.Error(w, "Error decoding base64Data: "+err.Error(), 400)
-				return
+			var data []byte
+			if len(inJson.Nbt2JsonData) > 0 {
+				data, err = nbt2json.Json2Nbt(inJson.Nbt2JsonData, binary.LittleEndian)
+				if err != nil {
+					http.Error(w, "Error decoding nbt2jsonData: "+err.Error(), 400)
+					return
+				}
+			} else {
+				data, err = base64.StdEncoding.DecodeString(inJson.Base64Data)
+				if err != nil {
+					http.Error(w, "Error decoding base64Data: "+err.Error(), 400)
+					return
+				}
 			}
 			err = world.Put(outData.key, data)
 			if err != nil {
