@@ -2,9 +2,8 @@ package world
 
 import (
 	"errors"
-	"os"
-
 	"io/ioutil"
+	"os"
 
 	"github.com/midnightfreddie/goleveldb/leveldb"
 )
@@ -67,25 +66,25 @@ func (world *World) GetKeys() ([][]byte, error) {
 	return keylist, nil
 }
 
-// GetPlayerKeys returns player keys
-func (world *World) GetPlayerKeys() ([][]byte, error) {
-	keylist := [][]byte{}
-	iter := world.db.NewIterator(nil, nil)
-	for iter.Next() {
-		key := iter.Key()
-		tmp := make([]byte, len(key))
-		copy(tmp, key)
-		if isPlayer(key) {
-			keylist = append(keylist, tmp)
-		}
-	}
-	iter.Release()
-	err := iter.Error()
-	if err != nil {
-		return keylist, err
-	}
-	return keylist, nil
-}
+// // GetPlayerKeys returns player keys
+// func (world *World) GetPlayerKeys() ([][]byte, error) {
+// 	keylist := [][]byte{}
+// 	iter := world.db.NewIterator(nil, nil)
+// 	for iter.Next() {
+// 		key := iter.Key()
+// 		tmp := make([]byte, len(key))
+// 		copy(tmp, key)
+// 		if isPlayer(key) {
+// 			keylist = append(keylist, tmp)
+// 		}
+// 	}
+// 	iter.Release()
+// 	err := iter.Error()
+// 	if err != nil {
+// 		return keylist, err
+// 	}
+// 	return keylist, nil
+// }
 
 // Get gets a value from the world database
 func (world *World) Get(key []byte) ([]byte, error) {
