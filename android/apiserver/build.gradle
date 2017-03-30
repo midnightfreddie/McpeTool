@@ -7,13 +7,17 @@
 //     pkg = "github.com/midnightfreddie/McpeTool/android/apiserver"
 // }
 
+// TODO: Define outputs and such so that it is smart enough not to build if aar is newer than code files
 // So, let's do it manually
 task compileAar {
     doLast {
-        // println "gomobile bind".execute(null, new File("./apiserver"))
-        // "gomobile bind".execute()
-        println "HIHIHIHIHIHIHIHIHI"
-        (new ProcessBuilder("gomobile bind".split()).redirectErrorStream(true).directory(new File("./apiserver")).start()).inputStream.eachLine {println it}
-        
+        // Sets working directory (relative to Gradle project root), combines stderr and stdout, prints output if any
+        // see http://www.joergm.com/2010/09/executing-shell-commands-in-groovy/
+        (
+            new ProcessBuilder(["gomobile","bind"])
+            .redirectErrorStream(true)
+            .directory(new File("./apiserver"))
+            .start()
+        ).inputStream.eachLine {println it}
     }
 }
