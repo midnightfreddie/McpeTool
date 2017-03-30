@@ -1,0 +1,19 @@
+// Per http://stackoverflow.com/questions/42048423/android-golang-bind-refresh-aar , the go binding plugin is not up-to-date
+// which explains why I couldn't make this work
+// plugins {
+//     id "org.golang.mobile.bind" version "0.2.8"
+// }
+// gobind {
+//     pkg = "github.com/midnightfreddie/McpeTool/android/apiserver"
+// }
+
+// So, let's do it manually
+task compileAar {
+    doLast {
+        // println "gomobile bind".execute(null, new File("./apiserver"))
+        // "gomobile bind".execute()
+        println "HIHIHIHIHIHIHIHIHI"
+        (new ProcessBuilder("gomobile bind".split()).redirectErrorStream(true).directory(new File("./apiserver")).start()).inputStream.eachLine {println it}
+        
+    }
+}

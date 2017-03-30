@@ -1,3 +1,5 @@
 *.exe
 db/
 *.aar
+.gradle
+build
