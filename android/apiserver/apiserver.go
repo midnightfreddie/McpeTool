@@ -1,51 +1,21 @@
 package apiserver
 
 import (
-	"io"
-	"io/ioutil"
-	"net/http"
+	"github.com/midnightfreddie/McpeTool/api"
+	"github.com/midnightfreddie/McpeTool/world"
 )
 
-// func StartApiServer(path string) {
 func StartApiServer() {
+	path := `/storage/emulated/0/games/com.mojang/minecraftWorlds/h4wKANYDAQA=`
 	go func() {
-		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			path := `/storage/emulated/0/games/com.mojang/minecraftWorlds`
-			// files, err := ioutil.ReadDir(path + "/db")
-			files, err := ioutil.ReadDir(path)
-			// files, err := ioutil.ReadDir(`/storage/emulated/0/games/com.mojang/minecraftWorlds/3`)
-			// files, err := ioutil.ReadDir(`/storage/emulated/0/games/com.mojang/minecraftWorlds/h4wKANYDAQA\=`)
-			if err != nil {
-				panic(err)
-			}
-			io.WriteString(w, "<html><head><title>HelloWorld</title></head><body><h1 style=\"color: red;\">Hello world!</h1><ul>")
-			for _, file := range files {
-				moarFiles, err := ioutil.ReadDir(path + `/` + string(file.Name()))
-				if err != nil {
-					panic(err)
-				}
-				for _, moarFile := range moarFiles {
-					// fmt.Println(file.Name())
-					io.WriteString(w, "<li>"+path+`/`+string(file.Name())+`/`+string(moarFile.Name())+"</li>")
-				}
-			}
-			io.WriteString(w, "</ul></body></html>")
-		})
-		http.ListenAndServe(":8080", nil)
+		world, err := world.OpenWorld(path)
+		if err != nil {
+			panic(err)
+		}
+		defer world.Close()
+		err = api.Server(&world)
+		if err != nil {
+			panic(err)
+		}
 	}()
-	// path := `/storage/emulated/0/games/com.mojang/minecraftWorlds/h4wKANYDAQA\=`
-	// path := `/storage/emulated/0/games/com.mojang/minecraftWorlds/h4wKANYDAQA\\\=`
-	// // path := `/storage/emulated/0/games/com.mojang/minecraftWorlds/mod`
-
-	// go func() {
-	// 	world, err := world.OpenWorld(path)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	defer world.Close()
-	// 	err = api.Server(&world)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// }()
 }
