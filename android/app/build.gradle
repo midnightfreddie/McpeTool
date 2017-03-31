@@ -13,15 +13,15 @@ android {
     }
 }
 
-// allprojects {
-//    repositories {
-//       flatDir {
-//         dirs '../apiserver'
-//       }
-//    }
-// }
+allprojects {
+   repositories {
+      flatDir {
+        dirs '../apiserver'
+      }
+   }
+}
 
-// dependencies {
-// //     compile(name:'apiserver', ext:'aar')
-//     compile project(':apiserver')
-// }
+dependencies {
+    compile(name:'apiserver', ext:'aar')
+    // compile project(':apiserver')
+}

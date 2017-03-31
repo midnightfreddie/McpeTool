@@ -1,0 +1,162 @@
+<!doctype html>
+<html ng-app="mcpeTool" ng-controller="World as world">
+<head>
+  <title>World Explorer for MCPE</title>
+</head>
+<body>
+  Under construction
+  <h2>Players</h2>
+  <div ng-repeat="(key, value) in world.players">{{ key }}</div>
+  <h2>Known Keys</h2>
+  <div ng-repeat="(key, value) in world.knownKeys">{{ key }}</div>
+  <h2>Chunk Entity Lists</h2>
+  <div>Not for display; list is for parsing all entities</div>
+  <div ng-repeat="entityChunk in world.entityChunkList">{{ entityChunk }}</div>
+  <h2>Unknown Keys</h2>
+  <div ng-repeat="(key, value) in world.unKnownKeys">{{ key }}</div>
+  <h2>Chunks</h2>
+  <div ng-repeat="(key, value) in world.chunks"><h3>{{ key }} <span ng-if="value.spawn">Spawn chunk</span></h3><div ng-repeat="(k, v) in value">{{ k }}: {{ v }}</div></div>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.3/angular.min.js"></script>
+  <script>
+    (function() {
+      'use strict';
+
+      angular
+        .module('mcpeTool', [])
+        .controller('World', World);
+
+       World.$inject = ['$http'];
+
+      function World($http) {
+        var vm = this;
+        vm.keyList = [];
+        vm.otherKeys;
+        vm.nonChunkKeys = [
+          'mVillages',
+          'AutonomousEntities',
+          'BiomeData',
+          'Overworld',
+          'dimension0',
+          'portals'
+        ];
+
+        vm.RefreshKeys = function() {
+          $http.get('http://127.0.0.1:8080/api/v1/db/')
+            .then(vm.RefreshKeysSuccess, vm.HttpFail);
+        }
+
+        vm.RefreshKeysSuccess = function(response) {
+          var chunk;
+          vm.keyList = response.data.keys;
+          vm.players = {};
+          vm.chunks = {};
+          vm.knownKeys = {};
+          vm.unKnownKeys = {};
+          vm.entityChunkList = [];
+          vm.keyList.forEach(function(e) {
+            // regex to match player string keys TODO: use hex key match instead?
+            if (/^(~local_player|^player_)/.test(e.stringKey)) {
+              vm.players[e.stringKey] = e;
+            } else if (vm.nonChunkKeys.includes(e.stringKey)) {
+              vm.knownKeys[e.stringKey] = e;
+            // matches 9, 10, 13 or 14 hex digits and captures matches
+            // 1: x, 2: z, 3: (if present) dimension, 4: tag / data type, 5: subchunk
+            } else if (chunk = e.hexKey.match(/^([\da-f]{8})([\da-f]{8})([\da-f]{8})?([\da-f]{2})([\da-f]{2})?$/i)) {
+              // Currently using x, z, and dimension (if present) portion of key to identify the chunk
+              var hexKey = chunk[1] + chunk[2] + (chunk[3] || "");
+              // Create key if not present
+              if (! vm.chunks[hexKey]) {
+                // base64-decode the binary key
+                var bytesKey = atob(e.base64Key);
+                // intermediate step to create array so buffer.slice is available
+                var byteArrayKey = new Array(bytesKey.length);
+                // populate the array
+                for (var i=0; i < bytesKey.length; i++) {
+                  byteArrayKey[i] = bytesKey.charCodeAt(i);
+                }
+                vm.chunks[hexKey] = {
+                  dimension: chunk[3] ? new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(8,12))[0] : 0,
+                  "x": new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(0,4))[0],
+                  "z": new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(4,8))[0],
+                  subChunks: [],
+                  unknown: []
+                }
+              }
+              switch (chunk[4]) {
+                case '2d':
+                  vm.chunks[hexKey]['data2d'] = e.url;
+                  break;
+                case '2f':
+                  vm.chunks[hexKey].subChunks.push(e.url);
+                  break;
+                case '32':
+                  vm.chunks[hexKey]['entities'] = e.url;
+                  vm.entityChunkList.push(e.url);
+                  break;
+                case '36':
+                  vm.chunks[hexKey]['0x36'] = e.url;
+                  break;
+                case '76':
+                  vm.chunks[hexKey]['version'] = e.url;
+                  break;
+                default:
+                  vm.chunks[hexKey].unknown.push(e.url);
+              }
+            } else {
+              vm.unKnownKeys[e.hexKey] = e;
+            }
+          });
+          vm.GetPlayerBeds();
+          vm.GetSpawnPoint();
+        }
+
+        vm.GetPlayerBeds = function() {
+          Object.keys(vm.players).forEach(function(e) {
+            $http.get(vm.players[e].url)
+              .then(vm.GetPlayerBedsSuccess, vm.HttpFail);
+          });
+        }
+
+        // NOTE: problem: I don't see where there is verification a bed exists
+        vm.GetPlayerBedsSuccess = function(response) {
+          var p = vm.players[response.data.stringKey]
+          p['nbt'] = response.data.nbt2jsonData;
+          p.nbt.value.forEach(function (e) {
+            if (/^BedPosition/.test(e.name)) {
+              p["bedChunk" + e.name.slice(-1)] = Math.floor(e.value / 16);
+              // console.log(p["bedChunk" + e.name.slice(-1)]);
+            }
+          });
+        }
+
+        vm.GetSpawnPoint = function() {
+          $http.get('http://127.0.0.1:8080/api/v1/level/')
+            .then(vm.GetSpawnPointSuccess, vm.HttpFail);
+        }
+
+        vm.GetSpawnPointSuccess = function (response) {
+          var coords = { x:0, z:0 };
+          response.data.levelDat.nbt.value.forEach(function (e) {
+            if (/^Spawn[XYZ]$/.test(e.name)) {
+              coords[e.name.slice(-1).toLowerCase()] = Math.floor(e.value / 16);
+            }
+          });
+          Object.keys(vm.chunks).forEach(function (e) {
+            var c = vm.chunks[e];
+            if (c.x == coords.x && c.z == coords.z) {
+              c["spawn"] = true;
+            }
+          });
+        }
+
+        vm.HttpFail = function(response) {
+          console.error('http failure', response.status, response.statustext, response.data);
+        }
+
+
+        vm.RefreshKeys();
+      }
+    })();
+  </script>
+</body>
+</html>
