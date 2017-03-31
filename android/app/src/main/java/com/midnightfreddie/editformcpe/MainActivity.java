@@ -40,8 +40,8 @@ public class MainActivity extends Activity {
         mWebView.setWebViewClient(new MyAppWebViewClient());
 
         // Use local resource
-        mWebView.loadUrl("file:///android_asset/www/index.html");
-        // mWebView.loadUrl("http://localhost:8080/");
+        // mWebView.loadUrl("file:///android_asset/www/index.html");
+        mWebView.loadUrl("http://localhost:8080/");
     }
 
     // Prevent the back-button from closing the app
