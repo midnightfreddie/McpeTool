@@ -14,6 +14,6 @@ func StartApiServer() {
 		// if err != nil {
 		// 	panic(err)
 		// }
-		api.WorldsServer()
+		api.WorldsServer(`/storage/emulated/0/games/com.mojang/minecraftWorlds`)
 	}()
 }

@@ -11,6 +11,14 @@ import (
 
 var apiVersion = "1.0"
 
+// type apiConfig struct {
+// 	worldsPath    string
+// 	h             func(config apiConfig, w http.ResponseWriter, r *http.Request)
+// 	urlPathPrefix string
+// 	relPath       string
+// 	serverurl     string
+// }
+
 // TODO: this moved to world/keys.go; remove its use from this package and delete
 // ACTUALLY: No. This package shouldn't rely on world/keys.go for its formatting
 // convertKey takes a byte array and returns a string if all characters are printable (else "")  hex-string-encoded versions of key
@@ -43,8 +51,8 @@ func Server(world *world.World) error {
 }
 
 // WorldsServer is the REST API server that lists and opens worlds on demand
-func WorldsServer() error {
-	http.HandleFunc("/api/v1/worlds/", worldsApi)
+func WorldsServer(worldsPath string) error {
+	http.HandleFunc("/api/v1/worlds/", worldsApi(worldsPath))
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080", nil))
 	return nil
 }
