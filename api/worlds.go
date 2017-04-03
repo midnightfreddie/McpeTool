@@ -40,7 +40,7 @@ func (o *WorldsResponse) Fill(urlPrefix string) {
 	for i := range o.Temp {
 		// TODO: Error handling?
 		urlEncoded, _ := url.Parse(urlPrefix)
-		urlEncoded.Path += "/" + o.temp[i]
+		urlEncoded.Path += o.temp[i]
 		o.Temp[i] = urlEncoded.String()
 	}
 }
@@ -56,7 +56,8 @@ func worldsApi(w http.ResponseWriter, r *http.Request) {
 			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	}
 	outData := NewWorldsResponse()
-	path := "/worlds/"
+	// FIXME: hackish and not robust
+	path := "/api/v1/worlds/"
 	relPath := r.URL.Path[len(path):]
 	// if relPath != "" {
 	// 	outData.key, err = hex.DecodeString(relPath)
