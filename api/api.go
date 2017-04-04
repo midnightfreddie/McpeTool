@@ -41,10 +41,10 @@ func convertKey(k []byte) (stringKey, hexKey, base64Key string) {
 func Server(world *world.World) error {
 
 	// http handler functions defined in other files in this package
-	dbApi(world, "/api/v1/db/")
+	// dbApi(world, "/api/v1/db/")
 	worldApi(world, "/api/v1/world/")
 	playerApi(world, "/api/v1/player/")
-	levelApi(world, "/api/v1/level/")
+	// levelApi(world, "/api/v1/level/")
 
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080", nil))
 	return nil

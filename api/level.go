@@ -30,58 +30,58 @@ func NewLevel() *Level {
 	return &Level{ApiVersion: apiVersion}
 }
 
-func levelApi(world *world.World, path string) {
-	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		var err error
-		// Set Origin headers for CORS
-		// yoinked from http://stackoverflow.com/questions/12830095/setting-http-headers-in-golang Matt Bucci's answer
-		// Could/should go in a Handle not HandleFunc, but I'm not yet quite sure how to do that with the default mux
-		if origin := r.Header.Get("Origin"); origin != "" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-			w.Header().Set("Access-Control-Allow-Headers",
-				"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		}
+func levelApi(world *world.World, path string, w http.ResponseWriter, r *http.Request) {
+	// http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+	var err error
+	// Set Origin headers for CORS
+	// yoinked from http://stackoverflow.com/questions/12830095/setting-http-headers-in-golang Matt Bucci's answer
+	// Could/should go in a Handle not HandleFunc, but I'm not yet quite sure how to do that with the default mux
+	if origin := r.Header.Get("Origin"); origin != "" {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers",
+			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	}
 
-		outData := NewLevel()
-		relPath := r.URL.Path[len(path):]
-		if relPath != "" {
-		}
-		switch r.Method {
-		case "GET":
-			if relPath == "" {
-				myLevelDat, err := world.GetLevelDat()
-				if err != nil {
-					http.Error(w, err.Error(), 500)
-					return
-				}
-				buf := bytes.NewReader(myLevelDat)
-				err = binary.Read(buf, binary.LittleEndian, &outData.LevelDat.Version)
-				if err != nil {
-					http.Error(w, err.Error(), 500)
-					return
-				}
-				outData.LevelDat.NBT, err = nbt2json.Nbt2Json(myLevelDat[8:], binary.LittleEndian)
-				if err != nil {
-					http.Error(w, err.Error(), 500)
-					return
-				}
-			} else {
-				http.Error(w, "no URLs under "+path, 404)
+	outData := NewLevel()
+	relPath := r.URL.Path[len(path):]
+	if relPath != "" {
+	}
+	switch r.Method {
+	case "GET":
+		if relPath == "" {
+			myLevelDat, err := world.GetLevelDat()
+			if err != nil {
+				http.Error(w, err.Error(), 500)
 				return
 			}
-		case "HEAD":
-			return
-		default:
-			http.Error(w, "Method "+r.Method+" not supported", 405)
+			buf := bytes.NewReader(myLevelDat)
+			err = binary.Read(buf, binary.LittleEndian, &outData.LevelDat.Version)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+			outData.LevelDat.NBT, err = nbt2json.Nbt2Json(myLevelDat[8:], binary.LittleEndian)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+		} else {
+			http.Error(w, "no URLs under "+path, 404)
 			return
 		}
-		outJson, err := json.MarshalIndent(outData, "", "  ")
-		// outJson, err := json.Marshal(keylist)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		fmt.Fprintln(w, string(outJson[:]))
-	})
+	case "HEAD":
+		return
+	default:
+		http.Error(w, "Method "+r.Method+" not supported", 405)
+		return
+	}
+	outJson, err := json.MarshalIndent(outData, "", "  ")
+	// outJson, err := json.Marshal(keylist)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	fmt.Fprintln(w, string(outJson[:]))
+	// })
 }

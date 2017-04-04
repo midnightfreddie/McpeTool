@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/midnightfreddie/McpeTool/world"
@@ -84,6 +85,7 @@ func worldsApi(worldsFilePath, path string) http.HandlerFunc {
 		}
 		outData := NewWorldsResponse()
 		relPath := r.URL.Path[len(path):]
+		var myWorld world.World
 		if relPath != "" {
 			urlencodedDir := strings.Split(relPath, "/")[0]
 			worldDir, err := url.QueryUnescape(urlencodedDir)
@@ -92,12 +94,26 @@ func worldsApi(worldsFilePath, path string) http.HandlerFunc {
 				return
 			}
 			outData.World = *WorldInfo(worldsFilePath+"/"+worldDir, r.URL.Path[:len(path)]+urlencodedDir)
-			world, err := world.OpenWorld(worldsFilePath + "/" + worldDir)
+			myWorld, err = world.OpenWorld(worldsFilePath + "/" + worldDir)
 			if err != nil {
 				http.Error(w, "Error opening world: "+err.Error(), 404)
 				return
 			}
-			defer world.Close()
+			defer myWorld.Close()
+		}
+		// if there is more in the URL after the world ID...
+		if len(outData.World.Url) > 0 && len(outData.World.Url) < len(r.URL.Path) {
+			db := regexp.MustCompile(`^.+/db/`)
+			level := regexp.MustCompile(`^.+/level/`)
+			switch {
+			case db.MatchString(r.URL.Path):
+				dbApi(&myWorld, outData.World.DbUrl, w, r)
+			case level.MatchString(r.URL.Path):
+				levelApi(&myWorld, outData.World.LevelUrl, w, r)
+			default:
+				http.Error(w, "Endpoint not found", 404)
+			}
+			return
 		}
 		switch r.Method {
 		case "GET":
@@ -117,7 +133,6 @@ func worldsApi(worldsFilePath, path string) http.HandlerFunc {
 			http.Error(w, "Method "+r.Method+" not supported", 405)
 			return
 		}
-		// TODO: URL prefix should be a variable and configurable. Or perhaps pulled from server.
 		outData.Fill(worldsFilePath, r.URL.Path[:len(path)])
 		outJson, err := json.MarshalIndent(outData, "", "  ")
 		// outJson, err := json.Marshal(keylist)
