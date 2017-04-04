@@ -4,10 +4,15 @@
   <title>World Editor for MCPE</title>
 </head>
 <body>
-  <h1>Worlds List</h1>
-  <ul>
-  <li ng-repeat="world in worlds.worldsList">{{ world.name }}</li>
-  </ul>
+  <div ng-show="worlds.path() == '/'">
+    <h1>Worlds List</h1>
+    <ul>
+    <li ng-repeat="world in worlds.worldsList"><a href="#!/world" ng-click="worlds.selectedWorld = world">{{ world.name }}</a></li>
+    </ul>
+  </div>
+  <div ng-show="worlds.path() == '/world'">
+  <div>{{ worlds.selectedWorld.name }}</div>
+  </div>
 
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.3/angular.min.js"></script>
   <script>
@@ -18,11 +23,15 @@
         .module('mcpeTool', [])
         .controller('Worlds', Worlds);
 
-       Worlds.$inject = ['$http'];
+       Worlds.$inject = ['$http', '$location'];
 
-      function Worlds($http) {
+      function Worlds($http, $location) {
         var vm = this;
+        vm.path = function() {
+            return $location.path();
+        }
         vm.worldsList = [];
+        vm.selectedWorld = null;
 
         vm.RefreshWorlds = function() {
           $http.get('http://127.0.0.1:8080/api/v1/worlds/')
