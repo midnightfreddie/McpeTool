@@ -1,0 +1,45 @@
+<!doctype html>
+<html ng-app="mcpeTool" ng-controller="Worlds as worlds">
+<head>
+  <title>World Editor for MCPE</title>
+</head>
+<body>
+  <h1>Worlds List</h1>
+  <ul>
+  <li ng-repeat="world in worlds.worldsList">{{ world.name }}</li>
+  </ul>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.3/angular.min.js"></script>
+  <script>
+    (function() {
+      'use strict';
+
+      angular
+        .module('mcpeTool', [])
+        .controller('Worlds', Worlds);
+
+       Worlds.$inject = ['$http'];
+
+      function Worlds($http) {
+        var vm = this;
+        vm.worldsList = [];
+
+        vm.RefreshWorlds = function() {
+          $http.get('http://127.0.0.1:8080/api/v1/worlds/')
+            .then(vm.RefreshWorldsSuccess, vm.HttpFail);
+        }
+
+        vm.RefreshWorldsSuccess = function(response) {
+          vm.worldsList = response.data.worlds;
+        }
+
+        vm.HttpFail = function(response) {
+          console.error('http failure', response.status, response.statustext, response.data);
+        }
+
+        vm.RefreshWorlds();
+      }
+    })();
+  </script>
+</body>
+</html>
