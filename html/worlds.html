@@ -5,7 +5,7 @@
 </head>
 <body>
 
-  <div ng-show="worlds.path() == '/'">
+  <div ng-show="worlds.path() == '/' || worlds.path()==''">
     <h1>Worlds List</h1>
     <ul>
     <li ng-repeat="world in worlds.worldsList"><a href="#!/world" ng-click="worlds.SelectWorld(world)">{{ world.name }}</a></li>
@@ -22,14 +22,18 @@
     <table>
     <tr ng-repeat="setting in worlds.selectedWorld.level.levelDat.nbt.value"><td>{{ setting.name }}</td><td>{{ setting.value }}</td></tr>
     </table>
+    <h2>DB Keys</h2>
+    <ul>
+      <li ng-repeat="key in worlds.selectedWorld.keyList">{{ key.stringKey ? key.stringKey : key.hexKey }}</li>
+    </ul>
   </div>
 
   <div ng-show="worlds.path() == '/spawn'">
   <h1>Spawn for World: {{ worlds.selectedWorld.name }}</h1>
     <ul>
-      <li>X: {{ worlds.GetNbtValue("SpawnX", worlds.selectedWorld.level.levelDat.nbt) }}</li>
-      <li>Z: {{ worlds.GetNbtValue("SpawnZ", worlds.selectedWorld.level.levelDat.nbt) }}</li>
-      <li>Y: {{ worlds.GetNbtValue("SpawnY", worlds.selectedWorld.level.levelDat.nbt) }}</li>
+      <li>X: {{ worlds.selectedWorld.SpawnX }}</li>
+      <li>Z: {{ worlds.selectedWorld.SpawnZ }}</li>
+      <li>Y: {{ worlds.selectedWorld.SpawnY }}</li>
       <li><a href="">Place Pumpkin Column</a></li>
     </ul>
   </div>
@@ -81,19 +85,40 @@
 
         vm.SelectWorldSuccess = function(response) {
             vm.selectedWorld.level = response.data;
+            vm.selectedWorld.level.levelDat.nbt.value.forEach(function(e) {
+                if (/^Spawn[XYZ]/.test(e.name)) {
+                    vm.selectedWorld[e.name] = e.value;
+                }
+            });
+            vm.GetDbKeys();
         }
 
-        vm.GetNbtValue = function(name, nbt) {
-            var value
-            if (nbt) {
-                nbt.value.forEach(function(e) {
-                    if (e.name == name) {
-                        value = e.value;
-                    }
-                });
-            }
-            return value;
+        vm.GetDbKeys = function() {
+          $http.get('http://127.0.0.1:8080' + vm.selectedWorld.dbUrl)
+            .then(vm.GetDbKeysSuccess, vm.HttpFail);
         }
+
+        vm.GetDbKeysSuccess = function(response) {
+          vm.selectedWorld.keyList = response.data.keys;
+        //   vm.selectedWorld.keyList.forEach(function(e) {
+        //       if (/31$/.test(e.hexKey)) {
+        //           $http.get(e.url)
+        //             .then(vm.AddBlockEntities, vm.HttpFail);
+        //       }
+        //   });
+        }
+
+        // vm.GetNbtValue = function(name, nbt) {
+        //     var value
+        //     if (nbt) {
+        //         nbt.value.forEach(function(e) {
+        //             if (e.name == name) {
+        //                 value = e.value;
+        //             }
+        //         });
+        //     }
+        //     return value;
+        // }
 
         vm.RefreshWorlds();
       }
