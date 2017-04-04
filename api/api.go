@@ -52,7 +52,7 @@ func Server(world *world.World) error {
 
 // WorldsServer is the REST API server that lists and opens worlds on demand
 func WorldsServer(worldsPath string) error {
-	http.HandleFunc("/api/v1/worlds/", worldsApi(worldsPath))
+	http.HandleFunc("/api/v1/worlds/", worldsApi(worldsPath, "/api/v1/worlds/"))
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080", nil))
 	return nil
 }

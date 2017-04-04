@@ -1,26 +1,55 @@
 package api
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 )
+
+type World struct {
+	Name        string `json:"name"`
+	DirName     string `json:"dirName"`
+	FqdnDirName string `json:"fqdnDirName"`
+	Url         string `json:"url,omitempty"`
+	DbUrl       string `json:"dbUrl,omitempty"`
+	LevelUrl    string `json:"levelUrl,omitempty"`
+	Error       string `json:"error,omitempty"`
+}
+
+func WorldInfo(worldPath, urlPrefix string) *World {
+	splitPath := strings.Split(worldPath, "/")
+	output := World{
+		DirName:     splitPath[len(splitPath)-1],
+		FqdnDirName: worldPath,
+		Url:         urlPrefix + "/",
+		DbUrl:       urlPrefix + "/db/",
+		LevelUrl:    urlPrefix + "/level/",
+	}
+	// world, err := world.OpenWorld(worldPath)
+	// if err != nil {
+	// 	output.Error = "Opening world: " + err.Error()
+	// 	return &output
+	// }
+	// defer world.Close()
+	name, err := ioutil.ReadFile(output.FqdnDirName + `/levelname.txt`)
+	if err != nil {
+		output.Name = output.DirName
+	} else {
+		output.Name = string(name[:])
+	}
+
+	return &output
+}
 
 // WorldsResponse is the default JSON response object
 type WorldsResponse struct {
-	key        []byte
-	keys       [][]byte
-	data       []byte
-	temp       []string
-	ApiVersion string   `json:"apiVersion"`
-	Keys       []Key    `json:"keys,omitempty"`
-	StringKey  string   `json:"stringKey,omitempty"`
-	HexKey     string   `json:"hexKey,omitempty"`
-	Base64Data string   `json:"base64Data,omitempty"`
-	Temp       []string `json:temp`
+	worldDirs  []string
+	ApiVersion string  `json:"apiVersion"`
+	Worlds     []World `json:"worlds,omitempty"`
+	World      World   `json:"world,omitempty"`
 }
 
 // NewWorldsResponse initializes and returns a Response object
@@ -29,23 +58,18 @@ func NewWorldsResponse() *WorldsResponse {
 }
 
 // Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
-func (o *WorldsResponse) Fill(urlPrefix string) {
-	o.StringKey, o.HexKey, _ = convertKey(o.key)
-	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
-	o.Keys = make([]Key, len(o.keys))
-	for i := range o.Keys {
-		o.Keys[i].StringKey, o.Keys[i].HexKey, _ = convertKey(o.keys[i])
-	}
-	o.Temp = make([]string, len(o.temp))
-	for i := range o.Temp {
+func (o *WorldsResponse) Fill(worldPath, urlPrefix string) {
+	o.Worlds = make([]World, len(o.worldDirs))
+	for i := range o.Worlds {
 		// TODO: Error handling?
 		urlEncoded, _ := url.Parse(urlPrefix)
-		urlEncoded.Path += o.temp[i]
-		o.Temp[i] = urlEncoded.String()
+		urlEncoded.Path += o.worldDirs[i]
+		// o.Worlds[i] = urlEncoded.String()
+		o.Worlds[i] = *WorldInfo(worldPath+"/"+o.worldDirs[i], urlEncoded.String())
 	}
 }
 
-func worldsApi(worldsFilePath string) http.HandlerFunc {
+func worldsApi(worldsFilePath, path string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Set Origin headers for CORS
 		// yoinked from http://stackoverflow.com/questions/12830095/setting-http-headers-in-golang Matt Bucci's answer
@@ -57,16 +81,16 @@ func worldsApi(worldsFilePath string) http.HandlerFunc {
 				"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		}
 		outData := NewWorldsResponse()
-		// FIXME: hackish and not robust
-		path := "/api/v1/worlds/"
 		relPath := r.URL.Path[len(path):]
-		// if relPath != "" {
-		// 	outData.key, err = hex.DecodeString(relPath)
-		// 	if err != nil {
-		// 		http.Error(w, err.Error()+"\n"+relPath+": URL key must be a byte array coded in hex digits, two digits per byte", 400)
-		// 		return
-		// 	}
-		// }
+		if relPath != "" {
+			urlencodedDir := strings.Split(relPath, "/")[0]
+			worldDir, err := url.QueryUnescape(urlencodedDir)
+			if err != nil {
+				http.Error(w, "Error decoding url: "+err.Error(), 404)
+				return
+			}
+			outData.World = *WorldInfo(worldsFilePath+"/"+worldDir, r.URL.Path[:len(path)]+urlencodedDir)
+		}
 		switch r.Method {
 		case "GET":
 			if relPath == "" {
@@ -76,9 +100,9 @@ func worldsApi(worldsFilePath string) http.HandlerFunc {
 					http.Error(w, "Error while reading minecraftWorlds folder: "+err.Error(), 500)
 					return
 				}
-				outData.temp = make([]string, len(dirs))
+				outData.worldDirs = make([]string, len(dirs))
 				for i, dir := range dirs {
-					outData.temp[i] = dir.Name()
+					outData.worldDirs[i] = dir.Name()
 				}
 			}
 			//  else {
@@ -97,7 +121,7 @@ func worldsApi(worldsFilePath string) http.HandlerFunc {
 			return
 		}
 		// TODO: URL prefix should be a variable and configurable. Or perhaps pulled from server.
-		outData.Fill("http://127.0.0.1:8080" + r.URL.Path[:len(path)])
+		outData.Fill(worldsFilePath, r.URL.Path[:len(path)])
 		outJson, err := json.MarshalIndent(outData, "", "  ")
 		// outJson, err := json.Marshal(keylist)
 		if err != nil {
