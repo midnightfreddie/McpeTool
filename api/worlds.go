@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/midnightfreddie/McpeTool/world"
 )
 
 type World struct {
@@ -90,12 +92,18 @@ func worldsApi(worldsFilePath, path string) http.HandlerFunc {
 				return
 			}
 			outData.World = *WorldInfo(worldsFilePath+"/"+worldDir, r.URL.Path[:len(path)]+urlencodedDir)
+			world, err := world.OpenWorld(worldsFilePath + "/" + worldDir)
+			if err != nil {
+				http.Error(w, "Error opening world: "+err.Error(), 404)
+				return
+			}
+			defer world.Close()
 		}
 		switch r.Method {
 		case "GET":
 			if relPath == "" {
-				// worldsFilePath := `/storage/emulated/0/games/com.mojang/minecraftWorlds`
 				dirs, err := ioutil.ReadDir(worldsFilePath)
+				// TODO: Logic to understand finite worlds?
 				if err != nil {
 					http.Error(w, "Error while reading minecraftWorlds folder: "+err.Error(), 500)
 					return
@@ -105,17 +113,6 @@ func worldsApi(worldsFilePath, path string) http.HandlerFunc {
 					outData.worldDirs[i] = dir.Name()
 				}
 			}
-			//  else {
-			// 	outData.data, err = world.Get(outData.key)
-			// 	if err != nil {
-			// 		if err.Error() == "leveldb: not found" {
-			// 			http.Error(w, "key not found", 404)
-			// 			return
-			// 		}
-			// 		http.Error(w, err.Error(), 500)
-			// 		return
-			// 	}
-			// }
 		default:
 			http.Error(w, "Method "+r.Method+" not supported", 405)
 			return
