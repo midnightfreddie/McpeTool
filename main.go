@@ -16,7 +16,7 @@ func main() {
 	var path, outFile string
 	app := cli.NewApp()
 	app.Name = "MCPE Tool"
-	app.Version = "0.1.1"
+	app.Version = "0.1.2b"
 	app.Usage = "Reads and writes a Minecraft Pocket Edition world directory."
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -38,13 +38,13 @@ func main() {
 				var err error
 				// world, err := world.OpenWorld(path)
 				// if err != nil {
-				// 	return err
+				// 	return cli.NewExitError(err, 1);
 				// }
 				// defer world.Close()
 				// err = api.Server(&world)
 				err = api.WorldsServer(path)
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				return nil
 			},
@@ -56,12 +56,12 @@ func main() {
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(path)
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				defer world.Close()
 				keys, err := world.GetPlayerKeys()
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				for i := 0; i < len(keys); i++ {
 					fmt.Println(hex.EncodeToString(keys[i]))
@@ -76,12 +76,12 @@ func main() {
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(path)
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				defer world.Close()
 				keys, err := world.GetKeys()
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				for i := 0; i < len(keys); i++ {
 					fmt.Println(hex.EncodeToString(keys[i]))
@@ -111,16 +111,16 @@ func main() {
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(path)
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				defer world.Close()
 				key, err := hex.DecodeString(c.Args().Get(0))
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				value, err := world.Get(key)
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				if c.String("dump") == "true" {
 					fmt.Println(hex.Dump(value))
@@ -128,7 +128,7 @@ func main() {
 					// binary.Write(os.Stdout, binary.LittleEndian, value)
 					err := ioutil.WriteFile(outFile, value, 0644)
 					if err != nil {
-						return err
+						return cli.NewExitError(err, 1);
 					}
 				} else {
 					fmt.Println(base64.StdEncoding.EncodeToString(value))
@@ -144,23 +144,23 @@ func main() {
 				world, err := world.OpenWorld(path)
 				key, err := hex.DecodeString(c.Args().Get(0))
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				defer world.Close()
 				base64Data, err := ioutil.ReadAll(os.Stdin)
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				value, err := base64.StdEncoding.DecodeString(string(base64Data[:]))
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				err = world.Put(key, value)
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				return nil
 			},
@@ -172,16 +172,16 @@ func main() {
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(path)
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				defer world.Close()
 				key, err := hex.DecodeString(c.Args().Get(0))
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				err = world.Delete(key)
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1);
 				}
 				return nil
 			},

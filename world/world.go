@@ -26,6 +26,9 @@ func OpenWorld(path string) (World, error) {
 	if os.IsNotExist(err) {
 		return world, errors.New(dbPath + " does not exist. This must be run against a valid world folder.")
 	}
+	if err != nil {
+		return world, err
+	}
 	if !fileInfo.IsDir() {
 		return world, errors.New(dbPath + " is not a directory. This must be run against a valid world folder.")
 	}
