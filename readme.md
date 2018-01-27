@@ -24,8 +24,10 @@ This project was started before MCPE 1.0. It can still read and write the db key
 - `McpeTool keys` - This will list the keys in the LevelDB world store in hex format
 - `McpeTool get [--dump] <hexkey>` - Returns the data for the given key in base64 format
 	- `--dump` or `-d` flag outputs as hexdump instead
+	- `--json` or `-j` flag attempts nbt2json conversion and outputs json. It will not produce an error if the value is not nbt; it will output `{ "tagType": 0, "name": "" }` which doesn't represent the value.
 	- Example: `McpeTool.exe get 7e6c6f63616c5f706c61796572` returns player data
 - `McpeTool put <hexkey>` - Puts a key/value pair in the database, replacing the previous value if present or creating the key if not.
+	- `--json` or `-j` flag attempts json2nbt conversion on input data. The best use case for this is to get a value in json format, edit it, and then put the updated value back. This does not validate that the resulting NBT is valid game data.
 - `McpeTool delete <hexkey>` - Deletes the key/value pair for that key if present
 	- Example: `McpeTool.exe delete 7e6c6f63616c5f706c61796572` deletes the player data. If you do this and play the world, you will spawn at the original location with no inventory.
 - `McpeTool api` - Starts a local HTTP server allowing REST API access to the MCPE world database. When done accessing the world, stop the server with control-C (or your OS'es equivalent BREAK)
