@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/midnightfreddie/McpeTool/api"
 	"github.com/midnightfreddie/McpeTool/world"
@@ -16,13 +17,22 @@ func main() {
 	var path, outFile string
 	app := cli.NewApp()
 	app.Name = "MCPE Tool"
-	app.Version = "0.1.2b"
-	app.Usage = "Reads and writes a Minecraft Pocket Edition world directory."
+	app.Version = "0.1.4-alpha-1"
+	app.Compiled = time.Now()
+	app.Authors = []cli.Author{
+		cli.Author{
+			Name:  "Jim Nelson",
+			Email: "jim@jimnelson.us",
+		},
+	}
+	app.Copyright = "(c) 2018 Jim Nelson"
+	app.Usage = "Reads and writes a Minecraft Pocket Edition world directory | https://github.com/midnightfreddie/McpeTool"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name: "path, p",
-			// FIXME: This is Windows-specific
-			Value:       os.Getenv("LOCALAPPDATA") + `\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds`,
+			// Windows-specific save folder:
+			// Value:       os.Getenv("LOCALAPPDATA") + `\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds`,
+			Value:       ".",
 			Usage:       "`FILEPATH` of world",
 			EnvVar:      "MCPETOOL_WORLD",
 			Destination: &path,
@@ -36,13 +46,13 @@ func main() {
 			Usage:   "Open world, start API at http://127.0.0.1:8080 . Control-c to exit.",
 			Action: func(c *cli.Context) error {
 				var err error
-				// world, err := world.OpenWorld(path)
-				// if err != nil {
-				// 	return cli.NewExitError(err, 1);
-				// }
-				// defer world.Close()
-				// err = api.Server(&world)
-				err = api.WorldsServer(path)
+				world, err := world.OpenWorld(path)
+				if err != nil {
+					return cli.NewExitError(err, 1);
+				}
+				defer world.Close()
+				err = api.Server(&world)
+				// err = api.WorldsServer(path)
 				if err != nil {
 					return cli.NewExitError(err, 1);
 				}
