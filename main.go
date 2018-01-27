@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/binary"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/midnightfreddie/McpeTool/api"
 	"github.com/midnightfreddie/McpeTool/world"
+	"github.com/midnightfreddie/nbt2json"
 	"github.com/urfave/cli"
 )
 
@@ -84,6 +86,10 @@ func main() {
 					Name:  "dump, d",
 					Usage: "Display value as hexdump",
 				},
+				cli.BoolFlag{
+					Name:  "json, j",
+					Usage: "Display value as JSON. Only valid if value is NBT.",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(path)
@@ -101,6 +107,12 @@ func main() {
 				}
 				if c.String("dump") == "true" {
 					fmt.Println(hex.Dump(value))
+				} else if c.String("json") == "true" {
+					out, err := nbt2json.Nbt2Json(value, binary.LittleEndian)
+					if err != nil {
+						return cli.NewExitError(err, 1);
+					}
+					fmt.Println(string(out[:]))
 				} else {
 					fmt.Println(base64.StdEncoding.EncodeToString(value))
 				}
