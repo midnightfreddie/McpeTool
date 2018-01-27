@@ -123,7 +123,14 @@ func main() {
 			Name:      "put",
 			ArgsUsage: "<key>",
 			Usage:     "Put a key/value into the DB. The base64-encoded value read from stdin.",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "json, j",
+					Usage: "Use nbt2json JSON data as input",
+				},
+			},
 			Action: func(c *cli.Context) error {
+				var value []byte
 				world, err := world.OpenWorld(path)
 				key, err := hex.DecodeString(c.Args().Get(0))
 				if err != nil {
@@ -133,13 +140,20 @@ func main() {
 					return cli.NewExitError(err, 1);
 				}
 				defer world.Close()
-				base64Data, err := ioutil.ReadAll(os.Stdin)
+				inputData, err := ioutil.ReadAll(os.Stdin)
 				if err != nil {
 					return cli.NewExitError(err, 1);
 				}
-				value, err := base64.StdEncoding.DecodeString(string(base64Data[:]))
-				if err != nil {
-					return cli.NewExitError(err, 1);
+				if c.String("json") == "true" {
+					value, err = nbt2json.Json2Nbt(inputData[:], binary.LittleEndian)
+					if err != nil {
+						return cli.NewExitError(err, 1);
+					}
+				} else {
+					value, err = base64.StdEncoding.DecodeString(string(inputData[:]))
+					if err != nil {
+						return cli.NewExitError(err, 1);
+					}
 				}
 				err = world.Put(key, value)
 				if err != nil {
