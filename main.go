@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/midnightfreddie/McpeTool/api"
 	"github.com/midnightfreddie/McpeTool/world"
@@ -16,7 +17,15 @@ func main() {
 	var path string
 	app := cli.NewApp()
 	app.Name = "MCPE Tool"
-	app.Version = "0.1.2b"
+	app.Version = "0.1.3"
+	app.Compiled = time.Now()
+	app.Authors = []cli.Author{
+		cli.Author{
+			Name:  "Jim Nelson",
+			Email: "jim@jimnelson.us",
+		},
+	}
+	app.Copyright = "(c) 2018 Jim Nelson"
 	app.Usage = "Reads and writes a Minecraft Pocket Edition world directory."
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
