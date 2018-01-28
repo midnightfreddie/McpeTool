@@ -33,11 +33,11 @@ func NewResponse() *Response {
 
 // Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
 func (o *Response) Fill() {
-	o.StringKey, o.HexKey = convertKey(o.key)
+	o.StringKey, o.HexKey = ConvertKey(o.key)
 	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
 	o.Keys = make([]Key, len(o.keys))
 	for i := range o.Keys {
-		o.Keys[i].StringKey, o.Keys[i].HexKey = convertKey(o.keys[i])
+		o.Keys[i].StringKey, o.Keys[i].HexKey = ConvertKey(o.keys[i])
 	}
 }
 
@@ -47,8 +47,8 @@ type Key struct {
 	HexKey    string `json:"hexKey"`
 }
 
-// convertKey takes a byte array and returns a string if all characters are printable (else "")  hex-string-encoded versions of key
-func convertKey(k []byte) (stringKey, hexKey string) {
+// ConvertKey takes a byte array and returns a string if all characters are printable (else "")  hex-string-encoded versions of key
+func ConvertKey(k []byte) (stringKey, hexKey string) {
 	allAscii := true
 	for i := range k {
 		if k[i] < 0x20 || k[i] > 0x7e {
