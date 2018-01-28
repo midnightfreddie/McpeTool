@@ -20,7 +20,7 @@ func main() {
 	var path string
 	app := cli.NewApp()
 	app.Name = "MCPE Tool"
-	app.Version = "0.1.3y"
+	app.Version = "0.2.0"
 	app.Compiled = time.Now()
 	app.Authors = []cli.Author{
 		cli.Author{
@@ -110,22 +110,26 @@ func main() {
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
+				stringKey, hexKey := api.ConvertKey(key)
+				comment := "McpeTool v" + app.Version
+				if stringKey != "" {
+					comment += " | ASCII Key " + stringKey
+				}
+				comment += " | Hex Key " + hexKey + " | Path " + path
 				if c.String("dump") == "true" {
 					fmt.Println(hex.Dump(value))
-				} else if c.String("json") == "true" || c.String("yaml") == "true" {
-					out, err := nbt2json.Nbt2Json(value, binary.LittleEndian)
+				} else if c.String("json") == "true" {
+					out, err := nbt2json.Nbt2Json(value, binary.LittleEndian, comment)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
-					if c.String("yaml") == "true" {
-						yamlOut, err := yaml.JSONToYAML(out)
-						if err != nil {
-							return cli.NewExitError(err, 1)
-						}
-						fmt.Println(string(yamlOut[:]))
-					} else {
-						fmt.Println(string(out[:]))
+					fmt.Println(string(out[:]))
+				} else if c.String("yaml") == "true" {
+					out, err := nbt2json.Nbt2Yaml(value, binary.LittleEndian, comment)
+					if err != nil {
+						return cli.NewExitError(err, 1)
 					}
+					fmt.Println(string(out[:]))
 				} else {
 					fmt.Println(base64.StdEncoding.EncodeToString(value))
 				}
