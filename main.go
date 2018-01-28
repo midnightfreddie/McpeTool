@@ -141,6 +141,10 @@ func main() {
 					Name:  "json, j",
 					Usage: "Use nbt2json JSON data as input",
 				},
+				cli.BoolFlag{
+					Name:  "yaml, y",
+					Usage: "Use YAML-ized nbt2json data as input",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				var value []byte
@@ -162,6 +166,12 @@ func main() {
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
+				} else if c.String("yaml") == "true" {
+					yamlIn, err := yaml.YAMLToJSON(inputData[:])
+					if err != nil {
+						return cli.NewExitError(err, 1)
+					}
+					value, err = nbt2json.Json2Nbt(yamlIn, binary.LittleEndian)
 				} else {
 					value, err = base64.StdEncoding.DecodeString(string(inputData[:]))
 					if err != nil {
