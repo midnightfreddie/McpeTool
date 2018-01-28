@@ -9,7 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/ghodss/yaml"
 	"github.com/midnightfreddie/McpeTool/api"
 	"github.com/midnightfreddie/McpeTool/world"
 	"github.com/midnightfreddie/nbt2json"
@@ -20,7 +19,7 @@ func main() {
 	var path string
 	app := cli.NewApp()
 	app.Name = "MCPE Tool"
-	app.Version = "0.2.0"
+	app.Version = "0.2.1"
 	app.Compiled = time.Now()
 	app.Authors = []cli.Author{
 		cli.Author{
@@ -171,11 +170,10 @@ func main() {
 						return cli.NewExitError(err, 1)
 					}
 				} else if c.String("yaml") == "true" {
-					yamlIn, err := yaml.YAMLToJSON(inputData[:])
+					value, err = nbt2json.Yaml2Nbt(inputData, binary.LittleEndian)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
-					value, err = nbt2json.Json2Nbt(yamlIn, binary.LittleEndian)
 				} else {
 					value, err = base64.StdEncoding.DecodeString(string(inputData[:]))
 					if err != nil {
