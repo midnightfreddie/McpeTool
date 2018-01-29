@@ -2,21 +2,32 @@ $source = @"
 using System;
 
 public class McBedrockTool {
-    public static string SubchunkKey(int x, int z, int y) {
+    public static string GetKeyByCoords(int x, int z, int y = 0, int Dimension = 0, byte Tag = 0x2f) {
         int ChunkX = x / 16;
-        // return (BitConverter.GetBytes(ChunkX));
-        // return String.Concat(Array.ConvertAll(BitConverter.GetBytes(ChunkX), e => e.ToString("X2")));
-        // return ChunkX;
-        return HexKey(ChunkX);
+        int ChunkZ = z / 16;
+        byte SubChunkY = (byte) (y / 16);
+        string MyKey = HexKey(ChunkX) +
+            HexKey(ChunkZ) +
+            (Dimension == 0 ? "" : HexKey(Dimension)) +
+            HexKey(Tag) +
+            (Tag == 0x2f ? HexKey(SubChunkY) : "");
+        return MyKey;
     }
     public static string HexKey(int i) {
-        return String.Concat(Array.ConvertAll(BitConverter.GetBytes(i), x => x.ToString("X2")));
+        byte[] ByteArray = BitConverter.GetBytes(i);
+        // Force output order to little endian no matter the local platform
+        if (! BitConverter.IsLittleEndian)
+            Array.Reverse(ByteArray);
+        return String.Concat(Array.ConvertAll(ByteArray, x => x.ToString("X2")));
+    }
+    public static string HexKey(byte i) {
+        return i.ToString("X2");
     }
 }
 "@
 
 Add-Type -TypeDefinition $source
 
-[McBedrockTool]::SubchunkKey(413,54,105)
+[McBedrockTool]::GetKeyByCoords(413,54,90)
 
 pause
