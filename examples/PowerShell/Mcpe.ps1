@@ -1,6 +1,30 @@
 ﻿$EndPoint = "http://localhost:8080"
 $ApiRoot = "/api/v1/db"
 
+function Get-KeyByCoords {
+    [cmdletbinding()]
+    param (
+        [Int32]$X,
+        [Int32]$Z,
+        [Int32]$Y,
+        [Int32]$Dimension = 0,
+        [byte]$Tag = 0x2f
+    )
+    [Int32]$ChunkX = $X / 16
+    [Int32]$ChunkZ = $Z / 16
+    [byte]$SubChunkY = $Y / 16
+    return (
+        [System.BitConverter]::GetBytes($ChunkX) +
+        [System.BitConverter]::GetBytes($ChunkZ) +
+        $(if ($Dimension) { [System.BitConverter]::GetBytes($Dimension) }) +
+        $Tag +
+        $(if ($Tag -eq 0x2f) { $SubChunkY }) |
+        ForEach-Object {
+            '{0:x2}' -f $PSItem
+        }
+    ) -join ''
+}
+
 function ConvertTo-Base64 {
     [cmdletbinding()]
     param ( [byte[]]$ByteArray )
@@ -38,44 +62,63 @@ function Invoke-McpeApiTest {
     $DeleteResult = Invoke-WebRequest -Uri $Uri -Method Delete
 }
 
-# Returns byte offset of block in a terrain chunk. Does not validate input; X and Z should be from 0-15 each and Y from 0-127
+# Returns byte offset of block in a terrain chunk.
+# Can pass in chunk-relative or world coordinates because X % 16 is the same as (X % 16) % 16
 function Get-TerrainChunkOffset {
     [cmdletbinding()]
     param (
-        [int]$RelativeX,
-        [int]$RelativeZ,
+        [int]$X,
+        [int]$Z,
         [int]$Y
     )
-    $Value = $RelativeX * 2048 + $RelativeZ * 128 + $Y
+    $Value = ($X % 16) * 256 + ($Z % 16) * 16 + ($Y % 16) + 1
     Write-Output $Value
 }
 
 # Loads chunk 0,0 terrain and writes a pillar in the middle and staircase around the perimeter
+# X and Z are world coordinates, not chunk coordinates
+# Y is irrelevant for this function
 function Invoke-McpeSpiralStaircase {
     [cmdletbinding()]
     param (
+        $X,
+        $Z,
+        $Y,
         $OddYBlockID = 42,
-        $EvenYBlockID = 57,
-        $HexKey = "000000000000000030"
+        $EvenYBlockID = 57
     )
-    # Read chunk
-    $Uri = $EndPoint + $ApiRoot + "/" + $HexKey
-    $Result = Invoke-WebRequest -Uri $Uri -ErrorAction Stop
-    # The response body is a JSON object with a "base64Data" key holding the base64-encoded data. Decode it to [byte[]]
-    $ChunkData = ConvertFrom-Base64 (($Result.Content | ConvertFrom-Json).base64Data)
     # Set up a loop to add the pillar and spiral
     $RelativeX = 0
     $RelativeZ = 0
-    for ($Y = 0; $Y -lt 128; $Y++) {
+    for ($Y = 0; $Y -lt 256; $Y++) {
+        if ($Y % 16 -eq 0) {
+            # Read subchunk
+            $HexKey = Get-KeyByCoords -X $X -Z $Z -Y $Y
+            $Uri = $EndPoint + $ApiRoot + "/" + $HexKey
+            try {
+            $Result = Invoke-WebRequest -Uri $Uri -ErrorAction Stop
+            }
+            catch {
+                if ($Y -ge 16) {
+                    Write-Output "Unable to get subchunk key $HexKey. It may not exist as all-air subchunks aren't written. Lower subchunks were processed."
+                } else {
+                    Write-Error "Unable to get key $HexKey. Please check that coordinates are valid."
+                }
+                break
+            }
+            finally {}
+            # The response body is a JSON object with a "base64Data" key holding the base64-encoded data. Decode it to [byte[]]
+            $ChunkData = ConvertFrom-Base64 (($Result.Content | ConvertFrom-Json).base64Data)
+        }
         if ($Y % 2 -eq 0) {
             $BlockID = $EvenYBlockID
         } else {
             $BlockID = $OddYBlockID
         }
         # Place a pillar block
-        $ChunkData[(Get-TerrainChunkOffset -RelativeX 7 -Relativez 7 -Y $Y )] = $BlockID
+        $ChunkData[(Get-TerrainChunkOffset -X 7 -Z 7 -Y ($Y % 16) )] = $BlockID
         # Place a "spiral staircase" block
-        $ChunkData[(Get-TerrainChunkOffset -RelativeX $RelativeX  -RelativeZ $RelativeZ -Y $Y )] = $BlockID
+        $ChunkData[(Get-TerrainChunkOffset -X $RelativeX  -Z $RelativeZ -Y ($Y % 16) )] = $BlockID
         # Move staircase block X or Z
         switch ([Math]::Floor($Y / 15) %4) {
             0 { $RelativeX++; break }
@@ -83,12 +126,15 @@ function Invoke-McpeSpiralStaircase {
             2 { $RelativeX--; break }
             3 { $RelativeZ--; break }
         }
+        if ($Y % 16 -eq 15) {
+            # Write subchunk
+            # Create a JSON-encoded request body with the "base64Data" key holding the chunk data in base64 format
+            $Body = New-Object psobject -Property @{
+                base64Data = ConvertTo-Base64 $ChunkData
+            } | ConvertTo-Json
+            # Write the chunk back to the database
+            $Result = Invoke-WebRequest -Uri $Uri -Method Put -Body $Body
+        }        
     }
-    # Create a JSON-encoded request body with the "base64Data" key holding the chunk data in base64 format
-    $Body = New-Object psobject -Property @{
-        base64Data = ConvertTo-Base64 $ChunkData
-    } | ConvertTo-Json
-    # Write the chunk back to the database
-    $Result = Invoke-WebRequest -Uri $Uri -Method Put -Body $Body
-    # Remember to stop the API server before copying/plaing the level again
+    # Remember to stop the API server before copying/playing the level again
 }
