@@ -108,9 +108,9 @@ ref: https://minecraft.gamepedia.com/Bedrock_Edition_level_format
 
 - `(X % 16) * 256 + (Z % 16) * 16 + (Y % 16) + 1` - 1-byte Block ID that determines if the block is e.g. air, water, sand, dirt, tree, lava, etc.
 - The following three are odd in that each byte holds data for two blocks, in the high and low nybbles.
-- `(X % 16) * 32 + (Z % 16) * 8 + (Y % 16) / 2 + 4096 + 1` - Block data e.g. rotation
-- `(X % 16) * 32 + (Z % 16) * 8 + (Y % 16) / 2 + 6144 + 1` - Sky light
-- `(X % 16) * 32 + (Z % 16) * 8 + (Y % 16) / 2 + 8192 + 1` - Block light
+- `(X % 16) * 128 + (Z % 16) * 8 + (Y % 16) / 2 + 4096 + 1` - Block data e.g. rotation
+- `(X % 16) * 128 + (Z % 16) * 8 + (Y % 16) / 2 + 6144 + 1` - Sky light
+- `(X % 16) * 128 + (Z % 16) * 8 + (Y % 16) / 2 + 8192 + 1` - Block light
 
 ## Goals
 
