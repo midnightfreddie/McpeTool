@@ -11,18 +11,41 @@ import (
 
 var apiVersion = "1.0"
 
-// type apiConfig struct {
-// 	worldsPath    string
-// 	h             func(config apiConfig, w http.ResponseWriter, r *http.Request)
-// 	urlPathPrefix string
-// 	relPath       string
-// 	serverurl     string
-// }
+// Response is the default JSON response object
+type Response struct {
+	key        []byte
+	keys       [][]byte
+	data       []byte
+	ApiVersion string `json:"apiVersion"`
+	Keys       []Key  `json:"keys,omitempty"`
+	StringKey  string `json:"stringKey,omitempty"`
+	HexKey     string `json:"hexKey,omitempty"`
+	Base64Data string `json:"base64Data,omitempty"`
+}
 
-// TODO: this moved to world/keys.go; remove its use from this package and delete
-// ACTUALLY: No. This package shouldn't rely on world/keys.go for its formatting
-// convertKey takes a byte array and returns a string if all characters are printable (else "")  hex-string-encoded versions of key
-func convertKey(k []byte) (stringKey, hexKey, base64Key string) {
+// NewResponse initializes and returns a Response object
+func NewResponse() *Response {
+	return &Response{ApiVersion: apiVersion}
+}
+
+// Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
+func (o *Response) Fill() {
+	o.StringKey, o.HexKey = ConvertKey(o.key)
+	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
+	o.Keys = make([]Key, len(o.keys))
+	for i := range o.Keys {
+		o.Keys[i].StringKey, o.Keys[i].HexKey = ConvertKey(o.keys[i])
+	}
+}
+
+// Key is the element type in the Response.Keys array
+type Key struct {
+	StringKey string `json:"stringKey,omitempty"`
+	HexKey    string `json:"hexKey"`
+}
+
+// ConvertKey takes a byte array and returns a string if all characters are printable (else "")  hex-string-encoded versions of key
+func ConvertKey(k []byte) (stringKey, hexKey string) {
 	allAscii := true
 	for i := range k {
 		if k[i] < 0x20 || k[i] > 0x7e {
