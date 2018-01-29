@@ -15,7 +15,7 @@ public class McBedrockTool {
     }
     public static string HexKey(int i) {
         byte[] ByteArray = BitConverter.GetBytes(i);
-        // Force output order to little endian no matter the local platform
+        // Force byte order to little endian no matter the local platform
         if (! BitConverter.IsLittleEndian)
             Array.Reverse(ByteArray);
         return String.Concat(Array.ConvertAll(ByteArray, x => x.ToString("X2")));
@@ -28,6 +28,23 @@ public class McBedrockTool {
 
 Add-Type -TypeDefinition $source
 
+"Overworld subchunk coordinate"
 [McBedrockTool]::GetKeyByCoords(413,54,90)
+# 19000000030000002F05
 
-pause
+"Negative example"
+[McBedrockTool]::GetKeyByCoords(-413,54,90)
+# E7FFFFFF030000002F05
+
+"Nether dimension"
+[McBedrockTool]::GetKeyByCoords(-413,54,90, -1)
+# E7FFFFFF03000000FFFFFFFF2F05
+
+"End dimension"
+[McBedrockTool]::GetKeyByCoords(413,-54,90, 1)
+# E7FFFFFF03000000010000002F05
+
+"Overworld block entity data key"
+# Y is irrelevant here and Dimension redundant, but I can't used named parameters from PowerShell to C#
+[McBedrockTool]::GetKeyByCoords(413,54,90, 0, 50)
+# 190000000300000032
