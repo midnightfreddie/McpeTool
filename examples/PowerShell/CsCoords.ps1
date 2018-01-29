@@ -45,6 +45,6 @@ Add-Type -TypeDefinition $source
 # E7FFFFFF03000000010000002F05
 
 "Overworld block entity data key"
-# Y is irrelevant here and Dimension redundant, but I can't used named parameters from PowerShell to C#
+# Y is irrelevant here and Dimension redundant, but I can't use named parameters from PowerShell to C#
 [McBedrockTool]::GetKeyByCoords(413,54,90, 0, 50)
 # 190000000300000032
