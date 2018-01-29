@@ -102,6 +102,16 @@ So, the subchunk key for X=413, Z=54, Y=105 is 19000000**03000000**2f*06*
 
 ref: https://minecraft.gamepedia.com/Bedrock_Edition_level_format
 
+## How to convert world coordinates to block subchunk byte offsets
+
+`%` is modulo division, the remainder of integer division. Note that subchunks may not exist if they are empty.
+
+- `(X % 16) * 256 + (Z % 16) * 16 + (Y % 16) + 1` - 1-byte Block ID that determines if the block is e.g. air, water, sand, dirt, tree, lava, etc.
+- The following three are odd in that each byte holds data for two blocks, in the high and low nybbles.
+- `(X % 16) * 32 + (Z % 16) * 8 + (Y % 16) / 2 + 4096 + 1` - Block data e.g. rotation
+- `(X % 16) * 32 + (Z % 16) * 8 + (Y % 16) / 2 + 6144 + 1` - Sky light
+- `(X % 16) * 32 + (Z % 16) * 8 + (Y % 16) / 2 + 8192 + 1` - Block light
+
 ## Goals
 
 My original impulse was to create simple block structures--mob spawners, perhaps--in an existing world.
