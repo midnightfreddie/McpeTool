@@ -93,8 +93,20 @@ function Invoke-McpeSpiralStaircase {
     for ($Y = 0; $Y -lt 256; $Y++) {
         if ($Y % 16 -eq 0) {
             # Read subchunk
-            $Uri = $EndPoint + $ApiRoot + "/" + (Get-KeyByCoords -X $X -Z $Z -Y $Y)
+            $HexKey = Get-KeyByCoords -X $X -Z $Z -Y $Y
+            $Uri = $EndPoint + $ApiRoot + "/" + $HexKey
+            try {
             $Result = Invoke-WebRequest -Uri $Uri -ErrorAction Stop
+            }
+            catch {
+                if ($Y -ge 16) {
+                    Write-Output "Unable to get subchunk key $HexKey. It may not exist as all-air subchunks aren't written. Lower subchunks were processed."
+                } else {
+                    Write-Error "Unable to get key $HexKey. Please check that coordinates are valid."
+                }
+                break
+            }
+            finally {}
             # The response body is a JSON object with a "base64Data" key holding the base64-encoded data. Decode it to [byte[]]
             $ChunkData = ConvertFrom-Base64 (($Result.Content | ConvertFrom-Json).base64Data)
         }

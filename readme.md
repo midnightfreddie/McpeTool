@@ -4,19 +4,16 @@ A tool to read and write world data from Minecraft Pocket Edition.
 Currently it can read and write raw key/value data from command line or via HTTP REST API.
 For example, each chunk's terrain is stored in a single key/value pair, and the player is 
 
-Game-tested against Minecraft Windows 10 Beta and Android Minecraft Pocket Edition.
+Game-tested against Minecraft Windows 10 Edition and Android Minecraft Pocket Edition.
 
 The author has no affiliation with Minecraft, Mojang or Microsoft.
-
-## MCPE 1.0 Notes
-
-This project was started before MCPE 1.0. It can still read and write the db keys just fine, but the keys and data are formatted a bit differently, so some of the documentation could be out of date, and the Powershell API example currently shouldn't work against MCPE 1.0 or later, although the API itself will read, write and delete keys just fine.
 
 ## Use
 
 - **Back up your worlds**
 - Copy an MCPE world to a working folder
-	- Windows 10 Edition: Unzip an .mcworld file--rename it to .mcworld.zip if needed--so that the contents including the "db" folder are accessible. (In the future this utility may be able to read from .mcworld files directly.)
+	- Windows 10 Edition: Unzip an exported .mcworld file--rename it to .mcworld.zip if needed--so that the contents including the "db" folder are accessible. (In the future this utility may be able to read from .mcworld files directly.)
+	- Also, in Windows 10 the save folders can be found in `%LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds` (if you paste that into an explorer window it will show you the right location)
 	- For Android or iOS, backup and copy the worlds via USB or file manager app (transfer via cloud drive or Bluetooth)
 	- The world folder will include a "level.dat" file and a "db" directory
 	- Set the path to the world folder in the MCPETOOL_WORLD environment variable or pass it to mcpetool with the --path or -p parameter. If no path is provided, it will attempt to use the current folder as the world path.
@@ -24,7 +21,7 @@ This project was started before MCPE 1.0. It can still read and write the db key
 - `McpeTool keys` - This will list the keys in the LevelDB world store in hex format
 - `McpeTool get [--dump] <hexkey>` - Returns the data for the given key in base64 format
 	- `--dump` or `-d` flag outputs as hexdump instead
-	- `--json` or `-j` flag attempts nbt2json conversion and outputs json. It will not produce an error if the value is not nbt; it will output `{ "tagType": 0, "name": "" }` which doesn't represent the value.
+	- `--json` or `-j` flag attempts nbt2json conversion and outputs json. It will not produce an error if the value is not nbt; it will output `{ "tagType": 0, "name": "" }` which doesn't represent the value. Not all keys are NBT!
 	- `--yaml` or `y` - exactly like `--json` but then converted to YAML
 	- Example: `McpeTool.exe get 7e6c6f63616c5f706c61796572` returns player data
 - `McpeTool put <hexkey>` - Puts a key/value pair in the database, replacing the previous value if present or creating the key if not.
@@ -39,42 +36,71 @@ This project was started before MCPE 1.0. It can still read and write the db key
 			  "apiVersion": "1.0",
 			  "keys": [
 				{
-				  "hexKey": "000000000000000030"
+				  "stringKey": "AutonomousEntities",
+				  "hexKey": "4175746f6e6f6d6f7573456e746974696573"
 				},
 				{
-				  "hexKey": "000000000000000032"
+				  "stringKey": "BiomeData",
+				  "hexKey": "42696f6d6544617461"
 				},
 				{
-				  "hexKey": "000000000000000076"
+				  "stringKey": "Overworld",
+				  "hexKey": "4f766572776f726c64"
 				},
 				{
-				  "hexKey": "000000000100000030"
+				  "stringKey": "mVillages",
+				  "hexKey": "6d56696c6c61676573"
+				},
+				{
+				  "stringKey": "portals",
+				  "hexKey": "706f7274616c73"
+				},
+				{
+				  "hexKey": "7e000000000000002d"
+				},
+				{
+				  "hexKey": "7e000000000000002f00"
 				},
 				// <truncated for example>
 				{
-				  "hexKey": "fffffffffeffffff30"
+				  "hexKey": "8a000000f8ffffff36"
 				},
 				{
-				  "hexKey": "fffffffffeffffff76"
-				},
-				{
-				  "hexKey": "ffffffffffffffff30"
-				},
-				{
-				  "hexKey": "ffffffffffffffff76"
+				  "hexKey": "8a000000f8ffffff76"
 				}
 			  ]
 			}
 
-	- Can retrieve, e.g. http://localhost:8080/api/v1/db/000000000000000030 for terrain chunk X=0 Z=0, with HTTP GET requests, or a simple web browser
+	- Can retrieve, e.g. http://localhost:8080/api/v1/db/83000000ffffffff2f04 for terrain subchunk X=2098 Z=-16 Y=65, with HTTP GET requests, or a simple web browser
 
-			{
-			  "apiVersion": "1.0",
-			  "hexKey": "000000000000000030",
-			  "base64Data": "BwcHBwdJAwMDAwEBAQEBAQEA <truncated for example> B4GwcAd6qWwHe6psB32sbA=="
-			}
+				{
+					"apiVersion": "1.0",
+					"hexKey": "83000000ffffffff2f04",
+					"base64Data": "AAAAAAAAAAAAAAAAAA <truncated for example> AAAAAAAAAAAAA=="
+				}
 
 	- Can also PUT and DELETE keys via web API using tools and language of your choice   
+
+## How to convert world coordinates to leveldb keys
+
+All division below is of course integer division. The remainder/modulus will be used to find the byte offset within the subchunk data. Also, X, Z, and dimension are 32-bit signed integers in little endian byte order. The true key is a byte array, but we represent it with a hex string for convenience. In the examples below, I've bolded the chunk Z coordinate for clarity.
+
+Each chunk is 16x16x256 (X,Z,Y), and the subchunk block data keys are 16 high. So for x, z, y coordinates of 413, 54, 105:
+
+- chunk X = 413 / 16 = 25 or 0x19 signed 32-bit integer in little endian byte order ([0x19,0, 0, 0] == 19000000)
+- chunk Z = 54 / 16 = 3 ([0x3, 0, 0, 0] == **03000000**) 
+
+So all keys beginning with 19000000**03000000** are about this coordinate's chunk. (In the overworld; other dimensions add a 32-bit dimension ID, so the same coordinates in the Nether I think have keys that start with 19000000**03000000**FFFFFFFF and 19000000**03000000**01000000 for the End.)
+
+The tags and subchunk indexes are 8-bit values. (Unsigned? Not sure it matters as there are no negative Y chunk coordinates and no tags <0 or > 127.)
+
+47 ([0x2F]) is the subchunk prefix tag, so all keys beginning with 19000000**03000000**2f are the Y subchunks for this coordinate.
+
+- subchunk Y = 105 / 16 = 6 ([0x*06*])
+
+So, the subchunk key for X=413, Z=54, Y=105 is 19000000**03000000**2f*06*
+
+ref: https://minecraft.gamepedia.com/Bedrock_Edition_level_format
 
 ## Goals
 
