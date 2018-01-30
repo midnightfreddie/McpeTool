@@ -33,7 +33,7 @@ var levelDatCommand = cli.Command{
 				},
 			},
 			Action: func(c *cli.Context) error {
-				myWorld, err := world.OpenWorld(path)
+				myWorld, err := world.OpenWorld(worldPath)
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
@@ -46,7 +46,7 @@ var levelDatCommand = cli.Command{
 				case c.String("dump") == "true":
 					fmt.Println(hex.Dump(levelDat))
 				case c.String("yaml") == "true":
-					out, err := nbt2json.Nbt2Yaml(levelDat, binary.LittleEndian, jsonComment+" | level.dat | Path "+path)
+					out, err := nbt2json.Nbt2Yaml(levelDat, binary.LittleEndian, jsonComment+" | level.dat | Path "+worldPath)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
@@ -57,7 +57,7 @@ var levelDatCommand = cli.Command{
 						return cli.NewExitError(err, 1)
 					}
 				default:
-					out, err := nbt2json.Nbt2Json(levelDat, binary.LittleEndian, jsonComment+" | level.dat | Path "+path)
+					out, err := nbt2json.Nbt2Json(levelDat, binary.LittleEndian, jsonComment+" | level.dat | Path "+worldPath)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}

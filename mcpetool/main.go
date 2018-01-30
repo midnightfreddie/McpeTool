@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/binary"
+	"io/ioutil"
 	"os"
 	"time"
 
@@ -12,7 +14,23 @@ import (
 const appVersion = "0.2.2-alpha"
 const jsonComment = "MCPE Tool v" + appVersion
 
-var path string
+var worldPath string
+
+// Write to file or to stdout if outFile is "-"
+func writeOutput(outFile string, outData []byte) error {
+	if outFile == "-" {
+		err := binary.Write(os.Stdout, binary.LittleEndian, outData)
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
+	} else {
+		err := ioutil.WriteFile(outFile, outData, 0644)
+		if err != nil {
+			return cli.NewExitError(err, 1)
+		}
+	}
+	return nil
+}
 
 func main() {
 	app := cli.NewApp()
@@ -33,7 +51,7 @@ func main() {
 			Value:       ".",
 			Usage:       "`FILEPATH` of world",
 			EnvVar:      "MCPETOOL_WORLD",
-			Destination: &path,
+			Destination: &worldPath,
 		},
 	}
 
@@ -45,7 +63,7 @@ func main() {
 			Aliases: []string{"www"},
 			Usage:   "Open world, start API at http://127.0.0.1:8080 . Control-c to exit.",
 			Action: func(c *cli.Context) error {
-				world, err := world.OpenWorld(path)
+				world, err := world.OpenWorld(worldPath)
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}

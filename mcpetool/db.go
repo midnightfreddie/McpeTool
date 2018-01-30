@@ -23,7 +23,7 @@ var dbCommand = cli.Command{
 			Aliases: []string{"keys", "k"},
 			Usage:   "Lists all keys in the database.",
 			Action: func(c *cli.Context) error {
-				world, err := world.OpenWorld(path)
+				world, err := world.OpenWorld(worldPath)
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
@@ -57,7 +57,7 @@ var dbCommand = cli.Command{
 				},
 			},
 			Action: func(c *cli.Context) error {
-				world, err := world.OpenWorld(path)
+				world, err := world.OpenWorld(worldPath)
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
@@ -75,7 +75,7 @@ var dbCommand = cli.Command{
 				if stringKey != "" {
 					comment += " | ASCII Key " + stringKey
 				}
-				comment += " | Hex Key " + hexKey + " | Path " + path
+				comment += " | Hex Key " + hexKey + " | Path " + worldPath
 				if c.String("dump") == "true" {
 					fmt.Println(hex.Dump(value))
 				} else if c.String("json") == "true" {
@@ -112,7 +112,7 @@ var dbCommand = cli.Command{
 			},
 			Action: func(c *cli.Context) error {
 				var value []byte
-				world, err := world.OpenWorld(path)
+				world, err := world.OpenWorld(worldPath)
 				key, err := hex.DecodeString(c.Args().Get(0))
 				if err != nil {
 					return cli.NewExitError(err, 1)
@@ -153,7 +153,7 @@ var dbCommand = cli.Command{
 			ArgsUsage: "<key>",
 			Usage:     "Deletes a key and its value.",
 			Action: func(c *cli.Context) error {
-				world, err := world.OpenWorld(path)
+				world, err := world.OpenWorld(worldPath)
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
