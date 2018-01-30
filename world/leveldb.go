@@ -1,3 +1,6 @@
+// This file contains basic functions related to accessing the leveldb
+// Intelligence or data validation should go in other files
+
 package world
 
 import (
