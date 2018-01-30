@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
 
@@ -21,6 +22,7 @@ var levelDatCommand = cli.Command{
 				outFlag,
 				dumpFlag,
 				yamlFlag,
+				base64Flag,
 				binaryFlag,
 			},
 			Action: func(c *cli.Context) error {
@@ -43,6 +45,8 @@ var levelDatCommand = cli.Command{
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
+				case c.String("base64") == "true":
+					outData = []byte(base64.StdEncoding.EncodeToString(levelDat))
 				case c.String("binary") == "true":
 					outData = levelDat
 				default:
@@ -52,6 +56,55 @@ var levelDatCommand = cli.Command{
 					}
 				}
 				err = writeOutput(outFile, outData)
+				if err != nil {
+					return cli.NewExitError(err, 1)
+				}
+				return nil
+			},
+		},
+		{
+			Name:  "put",
+			Usage: "Overwrites level.dat with nbt-to-JSON formatted data",
+			Flags: []cli.Flag{
+				pathFlag,
+				inFlag,
+				dumpFlag,
+				yamlFlag,
+				base64Flag,
+				binaryFlag,
+			},
+			Action: func(c *cli.Context) error {
+				var levelDat []byte
+				var err error
+				inData, err := readInput(inFile)
+				if err != nil {
+					return cli.NewExitError(err, 1)
+				}
+				switch {
+				case c.String("yaml") == "true":
+					levelDat, err = nbt2json.Yaml2Nbt(levelDat, binary.LittleEndian)
+					if err != nil {
+						return cli.NewExitError(err, 1)
+					}
+				case c.String("binary") == "true":
+					levelDat = inData
+				case c.String("base64") == "true":
+					levelDat, err = base64.StdEncoding.DecodeString(string(inData[:]))
+					if err != nil {
+						return cli.NewExitError(err, 1)
+					}
+				default:
+					levelDat, err = nbt2json.Json2Nbt(levelDat, binary.LittleEndian)
+					if err != nil {
+						return cli.NewExitError(err, 1)
+					}
+				}
+				myWorld, err := world.OpenWorld(worldPath)
+				defer myWorld.Close()
+				if err != nil {
+					return cli.NewExitError(err, 1)
+				}
+				err = myWorld.PutLevelDat(levelDat)
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
