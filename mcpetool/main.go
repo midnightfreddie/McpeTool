@@ -15,11 +15,15 @@ import (
 	"github.com/urfave/cli"
 )
 
+const appVersion = "0.2.2-alpha"
+const jsonComment = "MCPE Tool v" + appVersion
+
+var path string
+
 func main() {
-	var path string
 	app := cli.NewApp()
-	app.Name = "MCPE Tool"
-	app.Version = "0.2.1"
+	app.Name = "mcpetool"
+	app.Version = appVersion
 	app.Compiled = time.Now()
 	app.Authors = []cli.Author{
 		cli.Author{
@@ -40,6 +44,7 @@ func main() {
 	}
 
 	app.Commands = []cli.Command{
+		levelDatCommand,
 		{
 			Name:    "api",
 			Aliases: []string{"www"},
@@ -110,7 +115,7 @@ func main() {
 					return cli.NewExitError(err, 1)
 				}
 				stringKey, hexKey := api.ConvertKey(key)
-				comment := "McpeTool v" + app.Version
+				comment := jsonComment
 				if stringKey != "" {
 					comment += " | ASCII Key " + stringKey
 				}
