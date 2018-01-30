@@ -14,7 +14,7 @@ import (
 const appVersion = "0.2.2-alpha"
 const jsonComment = "MCPE Tool v" + appVersion
 
-var worldPath string
+var worldPath, inFile, outFile string
 
 // Write to file or to stdout if outFile is "-"
 func writeOutput(outFile string, outData []byte) error {
@@ -52,6 +52,18 @@ func main() {
 			Usage:       "`FILEPATH` of world",
 			EnvVar:      "MCPETOOL_WORLD",
 			Destination: &worldPath,
+		},
+		cli.StringFlag{
+			Name:        "in, i",
+			Value:       "-",
+			Usage:       "Input `FILE` path",
+			Destination: &inFile,
+		},
+		cli.StringFlag{
+			Name:        "out, o",
+			Value:       "-",
+			Usage:       "Output `FILE` path",
+			Destination: &outFile,
 		},
 	}
 

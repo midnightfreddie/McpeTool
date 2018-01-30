@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
-	"os"
 
 	"github.com/midnightfreddie/McpeTool/world"
 	"github.com/midnightfreddie/nbt2json"
@@ -33,6 +31,8 @@ var levelDatCommand = cli.Command{
 				},
 			},
 			Action: func(c *cli.Context) error {
+				var outData []byte
+				var err error
 				myWorld, err := world.OpenWorld(worldPath)
 				if err != nil {
 					return cli.NewExitError(err, 1)
@@ -44,24 +44,23 @@ var levelDatCommand = cli.Command{
 				}
 				switch {
 				case c.String("dump") == "true":
-					fmt.Println(hex.Dump(levelDat))
+					outData = []byte(hex.Dump(levelDat))
 				case c.String("yaml") == "true":
-					out, err := nbt2json.Nbt2Yaml(levelDat, binary.LittleEndian, jsonComment+" | level.dat | Path "+worldPath)
+					outData, err = nbt2json.Nbt2Yaml(levelDat, binary.LittleEndian, jsonComment+" | level.dat | Path "+worldPath)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
-					fmt.Println(string(out[:]))
 				case c.String("binary") == "true":
-					err = binary.Write(os.Stdout, binary.LittleEndian, levelDat)
-					if err != nil {
-						return cli.NewExitError(err, 1)
-					}
+					outData = levelDat
 				default:
-					out, err := nbt2json.Nbt2Json(levelDat, binary.LittleEndian, jsonComment+" | level.dat | Path "+worldPath)
+					outData, err = nbt2json.Nbt2Json(levelDat, binary.LittleEndian, jsonComment+" | level.dat | Path "+worldPath)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
-					fmt.Println(string(out[:]))
+				}
+				err = writeOutput(outFile, outData)
+				if err != nil {
+					return cli.NewExitError(err, 1)
 				}
 				return nil
 			},
