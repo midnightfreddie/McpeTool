@@ -15,20 +15,13 @@ var levelDatCommand = cli.Command{
 	Subcommands: []cli.Command{
 		{
 			Name:  "get",
-			Usage: "Returns level.dat in JSON format",
+			Usage: "Returns level.dat in nbt-to-JSON format",
 			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:  "dump, d",
-					Usage: "Output hexdump",
-				},
-				cli.BoolFlag{
-					Name:  "yaml, y",
-					Usage: "Output YAML",
-				},
-				cli.BoolFlag{
-					Name:  "binary",
-					Usage: "Output binary. Only use when redirecting output.",
-				},
+				pathFlag,
+				outFlag,
+				dumpFlag,
+				yamlFlag,
+				binaryFlag,
 			},
 			Action: func(c *cli.Context) error {
 				var outData []byte

@@ -16,20 +16,67 @@ const jsonComment = "MCPE Tool v" + appVersion
 
 var worldPath, inFile, outFile string
 
+var pathFlag = cli.StringFlag{
+	Name:        "path, p",
+	Value:       ".",
+	Usage:       "`FILEPATH` of world",
+	EnvVar:      "MCPETOOL_WORLD",
+	Destination: &worldPath,
+}
+var inFlag = cli.StringFlag{
+	Name:        "in, i",
+	Value:       "-",
+	Usage:       "Input `FILE` path",
+	Destination: &inFile,
+}
+var outFlag = cli.StringFlag{
+	Name:        "out, o",
+	Value:       "-",
+	Usage:       "Output `FILE` path",
+	Destination: &outFile,
+}
+var dumpFlag = cli.BoolFlag{
+	Name:  "dump, d",
+	Usage: "Hexdump format",
+}
+var base64Flag = cli.BoolFlag{
+	Name:  "base64",
+	Usage: "Base64 format",
+}
+var jsonFlag = cli.BoolFlag{
+	Name:  "json, j",
+	Usage: "JSON format",
+}
+var yamlFlag = cli.BoolFlag{
+	Name:  "yaml, yml, y",
+	Usage: "YAML format",
+}
+var binaryFlag = cli.BoolFlag{
+	Name:  "binary",
+	Usage: "Raw binary",
+}
+
+// Read from file or from stdin if inFile is "-"
+func readInput(inFile string) ([]byte, error) {
+	var inData []byte
+	var err error
+	if inFile == "-" {
+		inData, err = ioutil.ReadAll(os.Stdin)
+	} else {
+		inData, err = ioutil.ReadFile(inFile)
+	}
+	return inData, err
+}
+
 // Write to file or to stdout if outFile is "-"
 func writeOutput(outFile string, outData []byte) error {
+	var err error
 	if outFile == "-" {
-		err := binary.Write(os.Stdout, binary.LittleEndian, outData)
-		if err != nil {
-			return cli.NewExitError(err, 1)
-		}
+		err = binary.Write(os.Stdout, binary.LittleEndian, outData)
 	} else {
-		err := ioutil.WriteFile(outFile, outData, 0644)
-		if err != nil {
-			return cli.NewExitError(err, 1)
-		}
+		err = ioutil.WriteFile(outFile, outData, 0644)
 	}
-	return nil
+	return err
 }
 
 func main() {
@@ -45,28 +92,6 @@ func main() {
 	}
 	app.Copyright = "(c) 2018 Jim Nelson"
 	app.Usage = "Reads and writes a Minecraft Pocket Edition world directory."
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:        "path, p",
-			Value:       ".",
-			Usage:       "`FILEPATH` of world",
-			EnvVar:      "MCPETOOL_WORLD",
-			Destination: &worldPath,
-		},
-		cli.StringFlag{
-			Name:        "in, i",
-			Value:       "-",
-			Usage:       "Input `FILE` path",
-			Destination: &inFile,
-		},
-		cli.StringFlag{
-			Name:        "out, o",
-			Value:       "-",
-			Usage:       "Output `FILE` path",
-			Destination: &outFile,
-		},
-	}
-
 	app.Commands = []cli.Command{
 		levelDatCommand,
 		dbCommand,

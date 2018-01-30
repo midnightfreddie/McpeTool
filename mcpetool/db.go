@@ -5,8 +5,6 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
-	"os"
 
 	"github.com/midnightfreddie/McpeTool/api"
 	"github.com/midnightfreddie/McpeTool/world"
@@ -21,7 +19,10 @@ var dbCommand = cli.Command{
 		{
 			Name:    "list",
 			Aliases: []string{"keys", "k"},
-			Usage:   "Lists all keys in the database.",
+			Flags: []cli.Flag{
+				pathFlag,
+			},
+			Usage: "Lists all keys in the database.",
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(worldPath)
 				if err != nil {
@@ -41,22 +42,18 @@ var dbCommand = cli.Command{
 		{
 			Name:      "get",
 			ArgsUsage: "<key>",
-			Usage:     "Retruns a key's value in base64 format.",
+			Usage:     "Retruns a key's value in JSON format.",
 			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:  "dump, d",
-					Usage: "Display value as hexdump",
-				},
-				cli.BoolFlag{
-					Name:  "json, j",
-					Usage: "Display value as JSON. Only valid if value is NBT.",
-				},
-				cli.BoolFlag{
-					Name:  "yaml, y",
-					Usage: "Display value as YAML. Only valid if value is NBT.",
-				},
+				pathFlag,
+				outFlag,
+				yamlFlag,
+				dumpFlag,
+				base64Flag,
+				binaryFlag,
 			},
 			Action: func(c *cli.Context) error {
+				var outData []byte
+				var err error
 				world, err := world.OpenWorld(worldPath)
 				if err != nil {
 					return cli.NewExitError(err, 1)
@@ -77,21 +74,25 @@ var dbCommand = cli.Command{
 				}
 				comment += " | Hex Key " + hexKey + " | Path " + worldPath
 				if c.String("dump") == "true" {
-					fmt.Println(hex.Dump(value))
-				} else if c.String("json") == "true" {
-					out, err := nbt2json.Nbt2Json(value, binary.LittleEndian, comment)
-					if err != nil {
-						return cli.NewExitError(err, 1)
-					}
-					fmt.Println(string(out[:]))
+					outData = []byte(hex.Dump(value))
 				} else if c.String("yaml") == "true" {
-					out, err := nbt2json.Nbt2Yaml(value, binary.LittleEndian, comment)
+					outData, err = nbt2json.Nbt2Yaml(value, binary.LittleEndian, comment)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
-					fmt.Println(string(out[:]))
+				} else if c.String("base64") == "true" {
+					outData = []byte(base64.StdEncoding.EncodeToString(value))
+				} else if c.String("binary") == "true" {
+					outData = value
 				} else {
-					fmt.Println(base64.StdEncoding.EncodeToString(value))
+					outData, err = nbt2json.Nbt2Json(value, binary.LittleEndian, comment)
+					if err != nil {
+						return cli.NewExitError(err, 1)
+					}
+				}
+				err = writeOutput(outFile, outData)
+				if err != nil {
+					return cli.NewExitError(err, 1)
 				}
 				return nil
 			},
@@ -99,47 +100,38 @@ var dbCommand = cli.Command{
 		{
 			Name:      "put",
 			ArgsUsage: "<key>",
-			Usage:     "Put a key/value into the DB. The base64-encoded value read from stdin.",
+			Usage:     "Put a key/value into the DB. Overwrites the key if already present. Input is nbt2json-formatted",
 			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:  "json, j",
-					Usage: "Use nbt2json JSON data as input",
-				},
-				cli.BoolFlag{
-					Name:  "yaml, y",
-					Usage: "Use YAML-ized nbt2json data as input",
-				},
+				pathFlag,
+				inFlag,
+				yamlFlag,
+				base64Flag,
+				binaryFlag,
 			},
 			Action: func(c *cli.Context) error {
 				var value []byte
+				var err error
 				world, err := world.OpenWorld(worldPath)
 				key, err := hex.DecodeString(c.Args().Get(0))
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
-				if err != nil {
-					return cli.NewExitError(err, 1)
-				}
 				defer world.Close()
-				inputData, err := ioutil.ReadAll(os.Stdin)
+				inputData, err := readInput(inFile)
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
-				if c.String("json") == "true" {
-					value, err = nbt2json.Json2Nbt(inputData[:], binary.LittleEndian)
-					if err != nil {
-						return cli.NewExitError(err, 1)
-					}
-				} else if c.String("yaml") == "true" {
+				if c.String("yaml") == "true" {
 					value, err = nbt2json.Yaml2Nbt(inputData, binary.LittleEndian)
-					if err != nil {
-						return cli.NewExitError(err, 1)
-					}
-				} else {
+				} else if c.String("base64") == "true" {
 					value, err = base64.StdEncoding.DecodeString(string(inputData[:]))
-					if err != nil {
-						return cli.NewExitError(err, 1)
-					}
+				} else if c.String("binary") == "true" {
+					value = inputData
+				} else {
+					value, err = nbt2json.Json2Nbt(inputData[:], binary.LittleEndian)
+				}
+				if err != nil {
+					return cli.NewExitError(err, 1)
 				}
 				err = world.Put(key, value)
 				if err != nil {
@@ -152,6 +144,9 @@ var dbCommand = cli.Command{
 			Name:      "delete",
 			ArgsUsage: "<key>",
 			Usage:     "Deletes a key and its value.",
+			Flags: []cli.Flag{
+				pathFlag,
+			},
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(worldPath)
 				if err != nil {
