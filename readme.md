@@ -22,12 +22,12 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 
 ### LevelDB
 
-Most world data is stored in a modified LevelDB key/value store. The leveldb commands provide raw access to this key/value store. ref: https://minecraft.gamepedia.com/Bedrock_Edition_level_format
+Most world data is stored in a modified LevelDB key/value store. The `db` subcommands provide raw access to this key/value store. See [leveldb-keys](docs/#how-to-convert-world-coordinates-to-leveldb-keys) for more info.
 
 - `mcpetool db list [--path <path/to/world>]` - This will list the keys in the LevelDB world store in hex string format
 - `mcpetool db get [--path <path/to/world>] [--json] [--dump] [--yaml] [--base64] [--binary] <hexkey>` - Returns the data for the given key in base64 or specified format
 	- Example: `mcpetool db get --path path/to/world --yaml 7e6c6f63616c5f706c61796572` returns local player data in YAML format
-	- Example: `mcpetool db get --path path/to/world --json 00000000000000002f00` returns chunk X=0, Z=0, Y=0 in JSON format if it exists
+	- Example: `mcpetool db get --path path/to/world --json 00000000000000002f00` returns overworld subchunk X=0, Z=0, Y=0 in JSON format if it exists
 - `mcpetool db put [--path <path/to/world>] [--json] [--yaml] [--base64] [--binary] <hexkey>` - Puts a key/value pair in the database, replacing the previous value if present or creating the key if not. They key and value are not checked for game validity; it will place any data in any key you specify.
 - `mcpetool db delete [--path <path/to/world>] <hexkey>` - Deletes the key/value pair for that key if present
 	- Example: `mcpetool db delete [--path <path/to/world>] 7e6c6f63616c5f706c61796572` deletes the local player data including inventory and equipped items. If you do this and play the world, you will spawn at the world spawn point.
