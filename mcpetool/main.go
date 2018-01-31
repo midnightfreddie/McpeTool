@@ -11,7 +11,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-const appVersion = "0.2.2-alpha"
+const appVersion = "0.3.0-beta"
 const jsonComment = "MCPE Tool v" + appVersion
 
 var worldPath, inFile, outFile string
@@ -92,6 +92,9 @@ func main() {
 	}
 	app.Copyright = "(c) 2018 Jim Nelson"
 	app.Usage = "Reads and writes a Minecraft Pocket Edition world directory."
+	app.Flags = []cli.Flag{
+		pathFlag,
+	}
 	app.Commands = []cli.Command{
 		levelDatCommand,
 		dbCommand,

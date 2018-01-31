@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -42,13 +41,13 @@ var dbCommand = cli.Command{
 		{
 			Name:      "get",
 			ArgsUsage: "<key>",
-			Usage:     "Retruns a key's value in JSON format.",
+			Usage:     "Retruns a key's value in base64 format.",
 			Flags: []cli.Flag{
 				pathFlag,
 				outFlag,
+				jsonFlag,
 				yamlFlag,
 				dumpFlag,
-				base64Flag,
 				binaryFlag,
 			},
 			Action: func(c *cli.Context) error {
@@ -75,13 +74,18 @@ var dbCommand = cli.Command{
 				comment += " | Hex Key " + hexKey + " | Path " + worldPath
 				if c.String("dump") == "true" {
 					outData = []byte(hex.Dump(value))
+				} else if c.String("json") == "true" {
+					outData, err = nbt2json.Nbt2Json(value, binary.LittleEndian, comment)
+					if err != nil {
+						return cli.NewExitError(err, 1)
+					}
 				} else if c.String("yaml") == "true" {
 					outData, err = nbt2json.Nbt2Yaml(value, binary.LittleEndian, comment)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
-				} else if c.String("base64") == "true" {
-					outData = []byte(base64.StdEncoding.EncodeToString(value))
+					// } else if c.String("base64") == "true" {
+					// 	outData = []byte(base64.StdEncoding.EncodeToString(value))
 				} else if c.String("binary") == "true" {
 					outData = value
 				} else {
@@ -100,12 +104,12 @@ var dbCommand = cli.Command{
 		{
 			Name:      "put",
 			ArgsUsage: "<key>",
-			Usage:     "Put a key/value into the DB. Overwrites the key if already present. Input is nbt2json-formatted",
+			Usage:     "Put a key/value into the DB. Overwrites the key if already present. Input is base64-formatted by default.",
 			Flags: []cli.Flag{
 				pathFlag,
 				inFlag,
+				jsonFlag,
 				yamlFlag,
-				base64Flag,
 				binaryFlag,
 			},
 			Action: func(c *cli.Context) error {
@@ -121,10 +125,12 @@ var dbCommand = cli.Command{
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
-				if c.String("yaml") == "true" {
+				if c.String("json") == "true" {
+					value, err = nbt2json.Json2Nbt(inputData, binary.LittleEndian)
+				} else if c.String("yaml") == "true" {
 					value, err = nbt2json.Yaml2Nbt(inputData, binary.LittleEndian)
-				} else if c.String("base64") == "true" {
-					value, err = base64.StdEncoding.DecodeString(string(inputData[:]))
+					// } else if c.String("base64") == "true" {
+					// 	value, err = base64.StdEncoding.DecodeString(string(inputData[:]))
 				} else if c.String("binary") == "true" {
 					value = inputData
 				} else {
