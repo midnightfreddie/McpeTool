@@ -22,7 +22,7 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 
 ### LevelDB
 
-Most world data is stored in a modified LevelDB key/value store. The `db` subcommands provide raw access to this key/value store. See [leveldb-keys](docs/#how-to-convert-world-coordinates-to-leveldb-keys) for more info.
+Most world data is stored in a modified LevelDB key/value store. The `db` subcommands provide raw access to this key/value store. See [docs](docs/#how-to-convert-world-coordinates-to-leveldb-keys) for more info.
 
 - `mcpetool db list [--path <path/to/world>]` - This will list the keys in the LevelDB world store in hex string format
 - `mcpetool db get [--path <path/to/world>] [--json] [--dump] [--yaml] [--base64] [--binary] <hexkey>` - Returns the data for the given key in base64 or specified format
