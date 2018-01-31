@@ -1,5 +1,7 @@
 # MCPE Tool
 
+**Note**: Old readme file. The data and commands my be out-of-date.
+
 A tool to read and write world data from Minecraft Pocket Edition.
 Currently it can read and write raw key/value data from command line or via HTTP REST API.
 For example, each chunk's terrain is stored in a single key/value pair, and the player is 
