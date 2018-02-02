@@ -4,7 +4,7 @@
   <title>Rough World Map</title>
 </head>
 <body>
-    <svg id="overWorld"></svg>
+    <svg id="overWorld"></circle></svg>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
     <script>
         (function() {
@@ -37,7 +37,31 @@
                         }
                     }
                 });
-                console.log(chunkList);
+                let chunkArray = [];
+                for (let prop in chunkList) {
+                        chunkArray.push(chunkList[prop]);
+                }
+                let unitSize = 16
+                let xMin = Math.min(...chunkArray.map(x => x.x)) * unitSize;
+                let zMin = Math.min(...chunkArray.map(x => x.z)) * unitSize;
+                let xSize = Math.max(...chunkArray.map(x => x.x)) * unitSize - xMin;
+                let zSize = Math.max(...chunkArray.map(x => x.z)) * unitSize - zMin;
+                var svg = d3.select("svg#overWorld")
+                    .attr("viewBox", xMin.toString(10) + " " + zMin.toString(10)+ " " + xSize.toString(10)+ " " + zSize.toString(10))
+                    .attr("preserveAspectRatio", "xMidYMid meet")
+                    // .attr("width", "800")
+                    .attr("height", "auto")
+                    ;
+                var chunks = svg.selectAll("rect")
+                    .data(chunkArray)
+                    .enter()
+                    .append("rect")
+                    .attr("x", function(e){ return e.x * unitSize; })
+                    .attr("y", function(e){ return e.z * unitSize; })
+                    .attr("width", function(e){ return unitSize *0.8; })
+                    .attr("height", function(e){ return unitSize *0.8; })
+                    ;
+                
             });
         })();
     </script>
