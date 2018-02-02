@@ -87,7 +87,10 @@
                 case '2f':
                   vm.chunks[hexKey].subChunks.push(e.hexKey);
                   break;
-                case '32':
+                  case '31':
+                  vm.chunks[hexKey]['block-entities'] = e.hexKey;
+                  break;
+                  case '32':
                   vm.chunks[hexKey]['entities'] = e.hexKey;
                   vm.entityChunkList.push(e.hexKey);
                   break;

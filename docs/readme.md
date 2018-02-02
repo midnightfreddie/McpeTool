@@ -8,6 +8,20 @@ LevelDB keys (and data) are byte arrays, but hex strings are more human-friendly
 
 Most of the game data is tied to chunks (16x16x256-block-sized bits of the world), so most keys consist of an X and Z chunk coordinate, then optionally a dimension coordinate (for Nether, End, etc.), then a tag that identifies the type of data, and then for block data a Y subchunk index. [See below](#how-to-convert-world-coordinates-to-leveldb-keys) for more details.
 
+Decimal Tag | Hex Tag | Data Type | Data
+---|---|---|---
+45 | 2d | int16[] ? | Data2D
+46 | 2e |  byte[] | Data2DLegacy
+47 | 2f | nbt | SubChunkPrefix
+48 | 30 |  byte[] | LegacyTerrain (pre-1.0 128 height worlds)
+49 | 31 | nbt | BlockEntity
+50 | 32 | nbt | Entity
+51 | 33 |  nbt | PendingTicks
+52 | 34 |  int32, int32, int16 ? | BlockExtraData
+53 | 35 |  byte[3] ? | BiomeState
+54 | 36 | int32 | FinalizedState
+118 | 76 | byte | Version
+
 ## Non-chunk keys
 
 Some game data is not tied to chunks, and those keys are simple text descriptions. Here are some hex string keys for known simple keys:
@@ -15,11 +29,11 @@ Some game data is not tied to chunks, and those keys are simple text description
 Simple Name | Hex Key | Format | Contents
 ---|---|---|---
 ~local_player | 7e6c6f63616c5f706c61796572 | nbt | Local player data including inventory
-AutonomousEntities | 4175746f6e6f6d6f7573456e746974696573
-BiomeData | 42696f6d6544617461
-Overworld | 4f766572776f726c64
-mVillages | 6d56696c6c61676573
-portals | 706f7274616c73
+AutonomousEntities | 4175746f6e6f6d6f7573456e746974696573 | nbt |
+BiomeData | 42696f6d6544617461 | nbt |
+Overworld | 4f766572776f726c64 | nbt |
+mVillages | 6d56696c6c61676573 | nbt |
+portals | 706f7274616c73 | nbt |
 player_ | 706c617965725f | nbt | Keys beginning with this represent multiplayer players
 
 ## How to convert world coordinates to leveldb keys
