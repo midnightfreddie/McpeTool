@@ -1,20 +1,28 @@
 <!doctype html>
 <html>
 <head>
-  <title>Rough World Map</title>
+  <title>World Chunks Map</title>
 </head>
 <body>
-    <svg id="overWorld"></circle></svg>
+    <svg id="overWorld"xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:cc="http://web.resource.org/cc/"
+    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+    version="1.1"></svg>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
     <script>
         (function() {
             'use strict';
+            // Fetch keys from API. This is the only data needed for the chunk map.
             d3.json("http://127.0.0.1:8080/api/v1/db/", function(error, keyList){
                 if (error) {
                     return console.warn(error);
                 }
                 console.log("Key list retrieved");
                 let chunkList = {};
+                // Iterate over keys, add subchunk keys to chunkList data/count
                 keyList.keys.forEach(function(e, i) {
                     // Matches overworld subchunks ................2f..
                     if (/^[\da-f]{16}2f[\da-f]{2}/.test(e.hexKey)) {
@@ -37,30 +45,39 @@
                         }
                     }
                 });
+                // Make Array from chunkList hash data for use in d3.js
                 let chunkArray = [];
                 for (let prop in chunkList) {
                         chunkList[prop]["hexKey"] = prop;
                         chunkArray.push(chunkList[prop]);
                 }
+                // unitSize isn't really necessary; I put it in while trying to figure out SVG scaling
+                //   It could also be useful if I wanted to overlay a block map on top of this for matching scale
                 let unitSize = 16
+                // Finding min and max coordinates to set SVG viewBox origin and size for scaling and centering
                 let xMin = Math.min(...chunkArray.map(x => x.x)) * unitSize;
                 let zMin = Math.min(...chunkArray.map(x => x.z)) * unitSize;
                 let xSize = Math.max(...chunkArray.map(x => x.x)) * unitSize - xMin;
                 let zSize = Math.max(...chunkArray.map(x => x.z)) * unitSize - zMin;
+                // standard d3.js magic follows
+                // set attributes son element svg with id overWorld, create a reference variable
                 let svg = d3.select("svg#overWorld")
                     .attr("viewBox", xMin.toString(10) + " " + zMin.toString(10)+ " " + xSize.toString(10)+ " " + zSize.toString(10))
                     .attr("preserveAspectRatio", "xMidYMid meet")
                     // .attr("width", "800")
                     .attr("height", "auto")
                     ;
+                // add <g> elements, one for each chunkArray element with data attached
                 let chunks = svg.selectAll("g")
                     .data(chunkArray)
                     .enter()
                     .append("g")
                     ;
+                // create <title> elements for browser hover tooltip
                 chunks.append("title")
-                    .text(function(e){ return `${e.hexKey}\nchunk x,z ${e.x}, ${e.z}\nworld x,z ${e.x * 16}, ${e.z * 16}` ; })
+                    .text(function(e){ return `${e.hexKey}\nchunk x,z ${e.x}, ${e.z}\nworld x,z ${e.x * 16}, ${e.z * 16}\nsubchunks ${e.subchunks}` ; })
                     ;
+                // create square to represent chunk
                 chunks.append("rect")
                     .attr("x", function(e){ return e.x * unitSize; })
                     .attr("y", function(e){ return e.z * unitSize; })
