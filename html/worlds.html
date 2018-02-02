@@ -1,0 +1,128 @@
+<!doctype html>
+<html ng-app="mcpeTool" ng-controller="Worlds as worlds">
+<head>
+  <title>World Editor for MCPE</title>
+</head>
+<body>
+
+  <div ng-show="worlds.path() == '/' || worlds.path()==''">
+    <h1>Worlds List</h1>
+    <ul>
+    <li ng-repeat="world in worlds.worldsList"><a href="#!/world" ng-click="worlds.SelectWorld(world)">{{ world.name }}</a></li>
+    </ul>
+  </div>
+
+  <div ng-show="worlds.path() == '/world'">
+  <h1>World: {{ worlds.selectedWorld.name }}</h1>
+    <ul>
+      <li><a href="#!/spawn">Spawn</a></li>
+      <li><a href="#!/signs">Signs</a></li>
+    </ul>
+    <h2>level.dat</h2>
+    <table>
+    <tr ng-repeat="setting in worlds.selectedWorld.level.levelDat.nbt.value"><td>{{ setting.name }}</td><td>{{ setting.value }}</td></tr>
+    </table>
+    <h2>DB Keys</h2>
+    <ul>
+      <li ng-repeat="key in worlds.selectedWorld.keyList">{{ key.stringKey ? key.stringKey : key.hexKey }}</li>
+    </ul>
+  </div>
+
+  <div ng-show="worlds.path() == '/spawn'">
+  <h1>Spawn for World: {{ worlds.selectedWorld.name }}</h1>
+    <ul>
+      <li>X: {{ worlds.selectedWorld.SpawnX }}</li>
+      <li>Z: {{ worlds.selectedWorld.SpawnZ }}</li>
+      <li>Y: {{ worlds.selectedWorld.SpawnY }}</li>
+      <li><a href="">Place Pumpkin Column</a></li>
+    </ul>
+  </div>
+
+  <div ng-show="worlds.path() == '/signs'">
+  <h1>Signs for World: {{ worlds.selectedWorld.name }}</h1>
+    <ul>
+      <li><a href="#!/signs">Signs</a></li>
+    </ul>
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.3/angular.min.js"></script>
+  <script>
+    (function() {
+      'use strict';
+
+      angular
+        .module('mcpeTool', [])
+        .controller('Worlds', Worlds);
+
+       Worlds.$inject = ['$http', '$location'];
+
+      function Worlds($http, $location) {
+        var vm = this;
+        vm.path = function() {
+            return $location.path();
+        }
+        vm.worldsList = [];
+        vm.selectedWorld = null;
+
+        vm.RefreshWorlds = function() {
+          $http.get('http://127.0.0.1:8080/api/v1/worlds/')
+            .then(vm.RefreshWorldsSuccess, vm.HttpFail);
+        }
+
+        vm.RefreshWorldsSuccess = function(response) {
+          vm.worldsList = response.data.worlds;
+        }
+
+        vm.HttpFail = function(response) {
+          console.error('http failure', response.status, response.statustext, response.data);
+        }
+
+        vm.SelectWorld = function(world){
+            vm.selectedWorld = world;
+            $http.get('http://127.0.0.1:8080' + vm.selectedWorld.levelUrl)
+                .then(vm.SelectWorldSuccess, vm.HttpFail);
+        }
+
+        vm.SelectWorldSuccess = function(response) {
+            vm.selectedWorld.level = response.data;
+            vm.selectedWorld.level.levelDat.nbt.value.forEach(function(e) {
+                if (/^Spawn[XYZ]/.test(e.name)) {
+                    vm.selectedWorld[e.name] = e.value;
+                }
+            });
+            vm.GetDbKeys();
+        }
+
+        vm.GetDbKeys = function() {
+          $http.get('http://127.0.0.1:8080' + vm.selectedWorld.dbUrl)
+            .then(vm.GetDbKeysSuccess, vm.HttpFail);
+        }
+
+        vm.GetDbKeysSuccess = function(response) {
+          vm.selectedWorld.keyList = response.data.keys;
+        //   vm.selectedWorld.keyList.forEach(function(e) {
+        //       if (/31$/.test(e.hexKey)) {
+        //           $http.get(e.url)
+        //             .then(vm.AddBlockEntities, vm.HttpFail);
+        //       }
+        //   });
+        }
+
+        // vm.GetNbtValue = function(name, nbt) {
+        //     var value
+        //     if (nbt) {
+        //         nbt.value.forEach(function(e) {
+        //             if (e.name == name) {
+        //                 value = e.value;
+        //             }
+        //         });
+        //     }
+        //     return value;
+        // }
+
+        vm.RefreshWorlds();
+      }
+    })();
+  </script>
+</body>
+</html>
