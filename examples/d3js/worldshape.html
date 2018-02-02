@@ -39,6 +39,7 @@
                 });
                 let chunkArray = [];
                 for (let prop in chunkList) {
+                        chunkList[prop]["hexKey"] = prop;
                         chunkArray.push(chunkList[prop]);
                 }
                 let unitSize = 16
@@ -46,16 +47,21 @@
                 let zMin = Math.min(...chunkArray.map(x => x.z)) * unitSize;
                 let xSize = Math.max(...chunkArray.map(x => x.x)) * unitSize - xMin;
                 let zSize = Math.max(...chunkArray.map(x => x.z)) * unitSize - zMin;
-                var svg = d3.select("svg#overWorld")
+                let svg = d3.select("svg#overWorld")
                     .attr("viewBox", xMin.toString(10) + " " + zMin.toString(10)+ " " + xSize.toString(10)+ " " + zSize.toString(10))
                     .attr("preserveAspectRatio", "xMidYMid meet")
                     // .attr("width", "800")
                     .attr("height", "auto")
                     ;
-                var chunks = svg.selectAll("rect")
+                let chunks = svg.selectAll("g")
                     .data(chunkArray)
                     .enter()
-                    .append("rect")
+                    .append("g")
+                    ;
+                chunks.append("title")
+                    .text(function(e){ return `${e.hexKey}\nchunk x,z ${e.x}, ${e.z}\nworld x,z ${e.x * 16}, ${e.z * 16}` ; })
+                    ;
+                chunks.append("rect")
                     .attr("x", function(e){ return e.x * unitSize; })
                     .attr("y", function(e){ return e.z * unitSize; })
                     .attr("width", function(e){ return unitSize *0.8; })
