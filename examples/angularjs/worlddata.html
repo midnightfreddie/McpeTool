@@ -66,13 +66,11 @@
               var hexKey = chunk[1] + chunk[2] + (chunk[3] || "");
               // Create key if not present
               if (! vm.chunks[hexKey]) {
-                // base64-decode the binary key
-                var bytesKey = atob(e.base64Key);
-                // intermediate step to create array so buffer.slice is available
-                var byteArrayKey = new Array(bytesKey.length);
+                // create array so buffer.slice is available
+                var byteArrayKey = new Uint8Array(hexKey.length / 2);
                 // populate the array
-                for (var i=0; i < bytesKey.length; i++) {
-                  byteArrayKey[i] = bytesKey.charCodeAt(i);
+                for (var i = 0; i < hexKey.length; i += 2) {
+                  byteArrayKey[i/2] = parseInt("0x" + hexKey.substr(i, 2), 16);
                 }
                 vm.chunks[hexKey] = {
                   dimension: chunk[3] ? new Int32Array((new Uint8Array(byteArrayKey)).buffer.slice(8,12))[0] : 0,
@@ -87,29 +85,30 @@
                   vm.chunks[hexKey]['data2d'] = e.url;
                   break;
                 case '2f':
-                  vm.chunks[hexKey].subChunks.push(e.url);
+                  vm.chunks[hexKey].subChunks.push(e.hexKey);
                   break;
                 case '32':
-                  vm.chunks[hexKey]['entities'] = e.url;
-                  vm.entityChunkList.push(e.url);
+                  vm.chunks[hexKey]['entities'] = e.hexKey;
+                  vm.entityChunkList.push(e.hexKey);
                   break;
                 case '36':
-                  vm.chunks[hexKey]['0x36'] = e.url;
+                  vm.chunks[hexKey]['0x36'] = e.hexKey;
                   break;
                 case '76':
-                  vm.chunks[hexKey]['version'] = e.url;
+                  vm.chunks[hexKey]['version'] = e.hexKey;
                   break;
                 default:
-                  vm.chunks[hexKey].unknown.push(e.url);
+                  vm.chunks[hexKey].unknown.push(e.hexKey);
               }
             } else {
-              vm.unKnownKeys[e.hexKey] = e;
+              vm.unKnownKeys[e.hexKey] = e.hexKey;
             }
           });
-          vm.GetPlayerBeds();
-          vm.GetSpawnPoint();
+          // vm.GetPlayerBeds();
+          // vm.GetSpawnPoint();
         }
 
+        // not working as-is; this was written for a different API response
         vm.GetPlayerBeds = function() {
           Object.keys(vm.players).forEach(function(e) {
             $http.get(vm.players[e].url)
@@ -129,6 +128,7 @@
           });
         }
 
+        // not working as-is; this was written for a different API response
         vm.GetSpawnPoint = function() {
           $http.get('http://127.0.0.1:8080/api/v1/level/')
             .then(vm.GetSpawnPointSuccess, vm.HttpFail);
