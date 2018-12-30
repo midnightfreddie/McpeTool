@@ -12,6 +12,9 @@ const nonChunkKeys = [
   'portals'
 ];
 */
+// const allPrintableAscii = /^[ -~]+$/;
+// Matches strings that are hex strings of all-printable ascii (plus 0x7f, but oh well)
+const allPrintableAscii = /^([2-7][0-9a-fA-f])+$/;
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +23,7 @@ export class GameDataService {
 
   constructor(private http:HttpClient) { }
 
-  keyList: string[];
+  keyList: string[] = [];
 /*
   otherKeys;
   players = {};
@@ -40,11 +43,25 @@ export class GameDataService {
   }
 */
 
+  // Fetches key list from API and populates class property
   // TODO: Handle errors
   refreshKeys = () => {
     this.http.get(`${apiRoot}/db/`)
-      .subscribe( data => this.keyList = data.keys.map(e => e.hexKey));
+      .subscribe( data => this.keyList = data["keys"].map(e => e.hexKey));
   }
+
+  // Returns ASCII strings of hex keys that are all printable values
+  stringKeys = () => this.keyList.filter(e => allPrintableAscii.test(e)).map(e => this.asciiHexStringToString(e));
+
+  // Given hex string, returns printable ASCII string; does not validate input
+  private asciiHexStringToString = hexString => {
+    let out: string = "";
+    for (let i=0; i < hexString.length; i +=2) {
+      out += String.fromCharCode(parseInt(hexString.substring(i, i+2), 16));
+    }
+    return out;
+  }
+
     /* *** Will move this logic to other methods ***
   // Have to use arrow function notation to preserve 'this' in success function
   refreshKeysSuccess = (data) => {

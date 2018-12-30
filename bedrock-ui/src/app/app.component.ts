@@ -6,7 +6,7 @@ import { GameDataService } from './game-data.service';
   selector: 'app-root',
   template: `
     Under Construction
-    <li *ngFor="let foo of gameDataService.keyList">{{ foo }}</li>
+    <li *ngFor="let foo of gameDataService.stringKeys()">{{ foo }}</li>
     <router-outlet></router-outlet>
   `,
   styles: []
