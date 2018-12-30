@@ -6,16 +6,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class ChunkListService {
 
-  constructor(private http:HttpClient) {
-    // this.nonChunkKeys = [
-    //   'mVillages',
-    //   'AutonomousEntities',
-    //   'BiomeData',
-    //   'Overworld',
-    //   'dimension0',
-    //   'portals'
-    // ];
-  }
+  constructor(private http:HttpClient) { }
   keyList = [];
   otherKeys;
   nonChunkKeys = [
@@ -27,7 +18,7 @@ export class ChunkListService {
     'portals'
   ];
   players = {};
-  chunks: { [id: string]: string } = {};
+  chunks = {};
   knownKeys = {};
   unKnownKeys = {};
   entityChunkList = [];
