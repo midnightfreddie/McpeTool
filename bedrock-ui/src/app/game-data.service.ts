@@ -1,47 +1,62 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
+const apiRoot = 'http://127.0.0.1:8080/api/v1';
+/*
+const nonChunkKeys = [
+  'mVillages',
+  'AutonomousEntities',
+  'BiomeData',
+  'Overworld',
+  'dimension0',
+  'portals'
+];
+*/
+
 @Injectable({
   providedIn: 'root'
 })
-export class ChunkListService {
+export class GameDataService {
 
   constructor(private http:HttpClient) { }
-  keyList = [];
+
+  keyList: string[];
+/*
   otherKeys;
-  nonChunkKeys = [
-    'mVillages',
-    'AutonomousEntities',
-    'BiomeData',
-    'Overworld',
-    'dimension0',
-    'portals'
-  ];
   players = {};
   chunks = {};
   knownKeys = {};
   unKnownKeys = {};
   entityChunkList = [];
-
-  // Have to use arror function notation to preserve 'this' in success function
-  RefreshKeys = () => {
-    this.http.get('http://127.0.0.1:8080/api/v1/db/')
-      .subscribe(this.RefreshKeysSuccess);
-  }
-
-  RefreshKeysSuccess = (data) => {
-    let chunk;
-    this.keyList = data.keys;
+*/
+/*
+  zeroKeys = () => {
+    this.keyList = [];
     this.players = {};
     this.chunks = {};
     this.knownKeys = {};
     this.unKnownKeys = {};
     this.entityChunkList = [];
+  }
+*/
+
+  // TODO: Handle errors
+  refreshKeys = () => {
+    this.http.get(`${apiRoot}/db/`)
+      .subscribe( data => this.keyList = data.keys.map(e => e.hexKey));
+  }
+    /* *** Will move this logic to other methods ***
+  // Have to use arrow function notation to preserve 'this' in success function
+  refreshKeysSuccess = (data) => {
+    this.zeroKeys();
+    this.keyList = data.keys.map(e => e.hexKey);
+    console.log(this.keyList);
     this.keyList.forEach(e => {
+      let chunk: string;
       // regex to match player string keys TODO: use hex key match instead?
       if (/^(~local_player|^player_)/.test(e.stringKey)) {
         this.players[e.stringKey] = e;
-      } else if (this.nonChunkKeys.includes(e.stringKey)) {
+      } else if (nonChunkKeys.includes(e.stringKey)) {
         this.knownKeys[e.stringKey] = e;
       // matches 9, 10, 13 or 14 hex digits and captures matches
       // 1: x, 2: z, 3: (if present) dimension, 4: tag / data type, 5: subchunk
@@ -92,8 +107,10 @@ export class ChunkListService {
       }
     });
   }
-
-  HttpFail(response) {
+    */
+/*
+  httpFail = (response) => {
     console.error('http failure', response.status, response.statustext, response.data);
   }
+*/
 }
