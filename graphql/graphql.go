@@ -1,6 +1,8 @@
 package graphql
 
 import (
+	"encoding/base64"
+	"encoding/hex"
 	"log"
 	"net/http"
 
@@ -9,21 +11,52 @@ import (
 	"github.com/midnightfreddie/McpeTool/world"
 )
 
-var queryType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Query",
-	Fields: graphql.Fields{
-		"latestPost": &graphql.Field{
-			Type: graphql.String,
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "Hello World!", nil
+// DbObject is used for dbKeys results
+type DbObject struct {
+	key        []byte
+	data       []byte
+	StringKey  string `json:"stringKey,omitempty"`
+	HexKey     string `json:"hexKey,omitempty"`
+	Base64Data string `json:"base64Data,omitempty"`
+}
+
+// Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
+func (o *DbObject) Fill() {
+	o.StringKey, o.HexKey = ConvertKey(o.key)
+	o.Base64Data = base64.StdEncoding.EncodeToString(o.data)
+}
+
+var dbObjectType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "DbObject",
+		Fields: graphql.Fields{
+			"hexKey": &graphql.Field{
+				Type: graphql.String,
+			},
+			"stringKey": &graphql.Field{
+				Type: graphql.String,
+			},
+			"base64Data": &graphql.Field{
+				Type: graphql.String,
 			},
 		},
 	},
-})
+)
 
-var Schema, _ = graphql.NewSchema(graphql.SchemaConfig{
-	Query: queryType,
-})
+// ConvertKey takes a byte array and returns a string if all characters are printable (else "")  hex-string-encoded versions of key
+func ConvertKey(k []byte) (stringKey, hexKey string) {
+	allAscii := true
+	for i := range k {
+		if k[i] < 0x20 || k[i] > 0x7e {
+			allAscii = false
+		}
+	}
+	if allAscii {
+		stringKey = string(k[:])
+	}
+	hexKey = hex.EncodeToString(k)
+	return
+}
 
 // Handler wrapper to allow adding headers to all responses
 // concept yoinked from http://echorand.me/dissecting-golangs-handlerfunc-handle-and-defaultservemux.html
@@ -45,10 +78,45 @@ func setHeaders(handler http.Handler) http.Handler {
 
 func Server(world *world.World, bindAddress, bindPort string) error {
 
+	queryType := graphql.NewObject(graphql.ObjectConfig{
+		Name: "Query",
+		Fields: graphql.Fields{
+			"latestPost": &graphql.Field{
+				Type: graphql.String,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					return "Hello World!", nil
+				},
+			},
+			"dbKeys": &graphql.Field{
+				Type: graphql.NewList(dbObjectType),
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					keyList, err := world.GetKeys()
+					if err != nil {
+						return nil, err
+					}
+					outData := make([]DbObject, len(keyList))
+					for i := range keyList {
+						outData[i].key = keyList[i]
+						outData[i].Fill()
+					}
+					return outData, nil
+					// return []string{"bar", "baz"}, nil
+				},
+			},
+		},
+	})
+
+	Schema, err := graphql.NewSchema(graphql.SchemaConfig{
+		Query: queryType,
+	})
+	if err != nil {
+		return err
+	}
+
 	// create a graphl-go HTTP handler
 	graphQlHandler := handler.New(&handler.Config{
 		Schema: &Schema,
-		Pretty: true,
+		Pretty: false,
 		// GraphiQL provides simple web browser query interface pulled from Internet
 		GraphiQL: false,
 		// Playground provides fancier web browser query interface pulled from Internet
