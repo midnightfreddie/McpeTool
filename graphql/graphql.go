@@ -91,18 +91,27 @@ func Server(world *world.World, bindAddress, bindPort string) error {
 			"dbKeys": &graphql.Field{
 				Type:        graphql.NewList(dbObjectType),
 				Description: "Get list of keys in LevelDB",
+				Args: graphql.FieldConfigArgument{
+					"stringKeysOnly": &graphql.ArgumentConfig{
+						Type: graphql.Boolean,
+					},
+				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					stringKeysOnly, ok := p.Args["stringKeysOnly"].(bool)
 					keyList, err := world.GetKeys()
 					if err != nil {
 						return nil, err
 					}
-					// outData := make([]DbObject, len(keyList))
 					var outData []DbObject
 					for i := range keyList {
 						thisKey := new(DbObject)
 						thisKey.key = keyList[i]
 						thisKey.Fill()
-						if thisKey.StringKey != "" {
+						if ok && stringKeysOnly {
+							if thisKey.StringKey != "" {
+								outData = append(outData, *thisKey)
+							}
+						} else {
 							outData = append(outData, *thisKey)
 						}
 
