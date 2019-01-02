@@ -47,9 +47,12 @@ func Server(world *world.World, bindAddress, bindPort string) error {
 
 	// create a graphl-go HTTP handler
 	graphQlHandler := handler.New(&handler.Config{
-		Schema:   &Schema,
-		Pretty:   true,
-		GraphiQL: true,
+		Schema: &Schema,
+		Pretty: true,
+		// GraphiQL provides simple web browser query interface pulled from Internet
+		GraphiQL: false,
+		// Playground provides fancier web browser query interface pulled from Internet
+		Playground: true,
 	})
 
 	http.Handle("/", setHeaders(graphQlHandler))
