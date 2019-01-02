@@ -157,7 +157,7 @@ func main() {
 					return cli.NewExitError(err, 1)
 				}
 				defer world.Close()
-				fmt.Println("Starting API server at http://" + c.String("addr") + ":" + c.String("port") + "/")
+				fmt.Println("Starting GraphQL client and server at http://" + c.String("addr") + ":" + c.String("port"))
 				fmt.Println("  for world at " + worldPath)
 				fmt.Println("Press control-C to exit")
 				err = graphql.Server(&world, c.String("addr"), c.String("port"))
