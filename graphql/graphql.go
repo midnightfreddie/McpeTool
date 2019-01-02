@@ -81,26 +81,33 @@ func Server(world *world.World, bindAddress, bindPort string) error {
 	queryType := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"latestPost": &graphql.Field{
-				Type: graphql.String,
+			"helloWorld": &graphql.Field{
+				Type:        graphql.String,
+				Description: "Static GraphQL sanity test",
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					return "Hello World!", nil
 				},
 			},
 			"dbKeys": &graphql.Field{
-				Type: graphql.NewList(dbObjectType),
+				Type:        graphql.NewList(dbObjectType),
+				Description: "Get list of keys in LevelDB",
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					keyList, err := world.GetKeys()
 					if err != nil {
 						return nil, err
 					}
-					outData := make([]DbObject, len(keyList))
+					// outData := make([]DbObject, len(keyList))
+					var outData []DbObject
 					for i := range keyList {
-						outData[i].key = keyList[i]
-						outData[i].Fill()
+						thisKey := new(DbObject)
+						thisKey.key = keyList[i]
+						thisKey.Fill()
+						if thisKey.StringKey != "" {
+							outData = append(outData, *thisKey)
+						}
+
 					}
 					return outData, nil
-					// return []string{"bar", "baz"}, nil
 				},
 			},
 		},
