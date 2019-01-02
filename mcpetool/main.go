@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/midnightfreddie/McpeTool/api"
+	"github.com/midnightfreddie/McpeTool/graphql"
 	"github.com/midnightfreddie/McpeTool/world"
 	"github.com/urfave/cli"
 )
@@ -125,6 +126,41 @@ func main() {
 				fmt.Println("  for world at " + worldPath)
 				fmt.Println("Press control-C to exit")
 				err = api.Server(&world, c.String("addr"), c.String("port"))
+				if err != nil {
+					return cli.NewExitError(err, 1)
+				}
+				return nil
+			},
+		},
+		{
+			Name:    "graphql",
+			Aliases: []string{"g"},
+			Usage:   "Open world, start GraphQL handler at http://127.0.0.1:8080 . Control-c to exit.",
+			Flags: []cli.Flag{
+				pathFlag,
+				cli.StringFlag{
+					Name:   "addr",
+					Value:  "127.0.0.1",
+					Usage:  "`ADDRESS` on which to bind",
+					EnvVar: "MCPETOOL_ADDR",
+				},
+				cli.StringFlag{
+					Name:   "port",
+					Value:  "8080",
+					Usage:  "`PORT` on which to listen",
+					EnvVar: "MCPETOOL_PORT",
+				},
+			},
+			Action: func(c *cli.Context) error {
+				world, err := world.OpenWorld(worldPath)
+				if err != nil {
+					return cli.NewExitError(err, 1)
+				}
+				defer world.Close()
+				fmt.Println("Starting API server at http://" + c.String("addr") + ":" + c.String("port") + "/")
+				fmt.Println("  for world at " + worldPath)
+				fmt.Println("Press control-C to exit")
+				err = graphql.Server(&world, c.String("addr"), c.String("port"))
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
