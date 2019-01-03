@@ -19,6 +19,7 @@ type DbObject struct {
 	HexKey     string `json:"hexKey,omitempty"`
 	Base64Data string `json:"base64Data,omitempty"`
 	Base64Key  string `json:"base64Key,omitempty"`
+	SizeBytes  int    `json:"sizeBytes,omitempty"`
 }
 
 // Fill is used to convert the raw byte arrays to JSON-friendly data before returning to client
@@ -46,6 +47,9 @@ var dbObjectType = graphql.NewObject(
 			},
 			"base64Key": &graphql.Field{
 				Type: graphql.String,
+			},
+			"sizeBytes": &graphql.Field{
+				Type: graphql.Int,
 			},
 		},
 	},
@@ -116,10 +120,12 @@ func Server(world *world.World, bindAddress, bindPort string) error {
 				Description: "Get list of keys in LevelDB. Specifying multiple boolean arguments is invalid",
 				Args: graphql.FieldConfigArgument{
 					"isChunkKey": &graphql.ArgumentConfig{
-						Type: graphql.Boolean,
+						Type:        graphql.Boolean,
+						Description: "If true/false, returns only/no chunk keys. Overridden by stringKeysOnly",
 					},
 					"stringKeysOnly": &graphql.ArgumentConfig{
-						Type: graphql.Boolean,
+						Type:        graphql.Boolean,
+						Description: "If true, only returns readable keys",
 					},
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
