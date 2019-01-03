@@ -66,6 +66,21 @@ func ConvertKey(k []byte) (stringKey, hexKey string) {
 	return
 }
 
+// If key is certain length and x/z MSBs aren't printable ASCII, assume chunk key (not ideal, but probably works in all real cases)
+func IsChunkKey(k []byte) bool {
+	isChunk := false
+	for _, e := range []int{9, 10, 13, 14} {
+		if e == len(k) {
+			for i := range []int{3, 7} {
+				if k[i] < 0x20 || k[i] > 0x7e {
+					isChunk = true
+				}
+			}
+		}
+	}
+	return isChunk
+}
+
 // Handler wrapper to allow adding headers to all responses
 // concept yoinked from http://echorand.me/dissecting-golangs-handlerfunc-handle-and-defaultservemux.html
 func setHeaders(handler http.Handler) http.Handler {
@@ -98,14 +113,19 @@ func Server(world *world.World, bindAddress, bindPort string) error {
 			},
 			"dbKeys": &graphql.Field{
 				Type:        graphql.NewList(dbObjectType),
-				Description: "Get list of keys in LevelDB",
+				Description: "Get list of keys in LevelDB. Specifying multiple boolean arguments is invalid",
 				Args: graphql.FieldConfigArgument{
+					"isChunkKey": &graphql.ArgumentConfig{
+						Type: graphql.Boolean,
+					},
 					"stringKeysOnly": &graphql.ArgumentConfig{
 						Type: graphql.Boolean,
 					},
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					stringKeysOnly, ok := p.Args["stringKeysOnly"].(bool)
+					stringKeysOnly, okString := p.Args["stringKeysOnly"].(bool)
+					isChunkKey, okChunk := p.Args["isChunkKey"].(bool)
+
 					keyList, err := world.GetKeys()
 					if err != nil {
 						return nil, err
@@ -115,8 +135,12 @@ func Server(world *world.World, bindAddress, bindPort string) error {
 						thisKey := new(DbObject)
 						thisKey.Key = keyList[i]
 						thisKey.Fill()
-						if ok && stringKeysOnly {
+						if okString && stringKeysOnly {
 							if thisKey.StringKey != "" {
+								outData = append(outData, *thisKey)
+							}
+						} else if okChunk {
+							if isChunkKey == IsChunkKey(thisKey.Key) {
 								outData = append(outData, *thisKey)
 							}
 						} else {
