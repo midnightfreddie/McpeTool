@@ -73,9 +73,9 @@ func setHeaders(handler http.Handler) http.Handler {
 			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 			w.Header().Set("Access-Control-Allow-Headers",
 				"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-			// Since we're dynamically setting origin, don't let it get cached
-			w.Header().Set("Vary", "Origin")
 		}
+		// Since we're dynamically setting origin, don't let it get cached
+		w.Header().Set("Vary", "Origin")
 		handler.ServeHTTP(w, r)
 	})
 }
