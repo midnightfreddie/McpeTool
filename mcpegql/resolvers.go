@@ -15,45 +15,44 @@ var queryType = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"dbKeys": &graphql.Field{
-			Type:        graphql.NewList(dbObjectType),
+			Type:        graphql.NewList(dbKeyType),
 			Description: "Get list of keys in LevelDB. Specifying multiple boolean arguments is invalid",
 			Args: graphql.FieldConfigArgument{
 				"isChunkKey": &graphql.ArgumentConfig{
 					Type:        graphql.Boolean,
-					Description: "If true/false, returns only/no chunk keys. Overridden by stringKeysOnly",
+					Description: "If true/false, returns only/no chunk keys. Overridden by isStringKey",
 				},
-				"stringKeysOnly": &graphql.ArgumentConfig{
+				"isStringKey": &graphql.ArgumentConfig{
 					Type:        graphql.Boolean,
-					Description: "If true, only returns readable keys",
+					Description: "If true/false, returns only/no readable keys",
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				stringKeysOnly, okString := p.Args["stringKeysOnly"].(bool)
+				isStringKey, okString := p.Args["isStringKey"].(bool)
 				isChunkKey, okChunk := p.Args["isChunkKey"].(bool)
 
 				keyList, err := saveGame.GetKeys()
 				if err != nil {
 					return nil, err
 				}
-				var outData []DbObject
-				for i := range keyList {
-					thisKey := new(DbObject)
-					thisKey.Key = keyList[i]
-					thisKey.Fill()
-					if okString && stringKeysOnly {
-						if thisKey.StringKey != "" {
-							outData = append(outData, *thisKey)
+				if okString || okChunk {
+					var outKeys [][]byte
+					for i := range keyList {
+						if okString {
+							stringKey, _ := ConvertKey(keyList[i])
+							if isStringKey == (stringKey != "") {
+								outKeys = append(outKeys, keyList[i])
+							}
+						} else if okChunk {
+							if isChunkKey == IsChunkKey(keyList[i]) {
+								outKeys = append(outKeys, keyList[i])
+							}
 						}
-					} else if okChunk {
-						if isChunkKey == IsChunkKey(thisKey.Key) {
-							outData = append(outData, *thisKey)
-						}
-					} else {
-						outData = append(outData, *thisKey)
 					}
-
+					return outKeys, nil
+				} else {
+					return keyList, nil
 				}
-				return outData, nil
 			},
 		},
 	},

@@ -24,23 +24,63 @@ func (o *DbObject) Fill() {
 	o.Base64Key = base64.StdEncoding.EncodeToString(o.Key)
 }
 
+var dbKeyType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "DbKey",
+		Fields: graphql.Fields{
+			"key": &graphql.Field{
+				Type: graphql.NewList(graphql.Int),
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					key, ok := p.Source.([]byte)
+					if ok {
+						return key, nil
+					}
+					return nil, nil
+				},
+			},
+			"hexKey": &graphql.Field{
+				Type: graphql.String,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					key, ok := p.Source.([]byte)
+					if ok {
+						_, hexKey := ConvertKey(key)
+						return hexKey, nil
+					}
+					return nil, nil
+				},
+			},
+			"stringKey": &graphql.Field{
+				Type: graphql.String,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					key, ok := p.Source.([]byte)
+					if ok {
+						stringKey, _ := ConvertKey(key)
+						return stringKey, nil
+					}
+					return nil, nil
+				},
+			},
+			"base64Key": &graphql.Field{
+				Type: graphql.String,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					key, ok := p.Source.([]byte)
+					if ok {
+						return base64.StdEncoding.EncodeToString(key), nil
+					}
+					return nil, nil
+				},
+			},
+		},
+	},
+)
 var dbObjectType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "DbObject",
 		Fields: graphql.Fields{
-			"key": &graphql.Field{
+			"data": &graphql.Field{
 				Type: graphql.NewList(graphql.Int),
 			},
-			"hexKey": &graphql.Field{
-				Type: graphql.String,
-			},
-			"stringKey": &graphql.Field{
-				Type: graphql.String,
-			},
 			"base64Data": &graphql.Field{
-				Type: graphql.String,
-			},
-			"base64Key": &graphql.Field{
 				Type: graphql.String,
 			},
 			"sizeBytes": &graphql.Field{
