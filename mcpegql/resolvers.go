@@ -106,21 +106,56 @@ var dbKeyType = graphql.NewObject(
 					return nil, nil
 				},
 			},
+			"value": &graphql.Field{
+				Type: dbValueType,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					key, ok := p.Source.([]byte)
+					if ok {
+						value, err := saveGame.Get(key)
+						if err != nil {
+							return nil, err
+						}
+						return value, nil
+					}
+					return nil, nil
+				},
+			},
 		},
 	},
 )
-var dbObjectType = graphql.NewObject(
+var dbValueType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "DbObject",
+		Name: "DbValue",
 		Fields: graphql.Fields{
 			"data": &graphql.Field{
 				Type: graphql.NewList(graphql.Int),
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					value, ok := p.Source.([]byte)
+					if ok {
+						return value, nil
+					}
+					return nil, nil
+				},
 			},
 			"base64Data": &graphql.Field{
 				Type: graphql.String,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					value, ok := p.Source.([]byte)
+					if ok {
+						return base64.StdEncoding.EncodeToString(value), nil
+					}
+					return nil, nil
+				},
 			},
 			"sizeBytes": &graphql.Field{
 				Type: graphql.Int,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					value, ok := p.Source.([]byte)
+					if ok {
+						return len(value), nil
+					}
+					return nil, nil
+				},
 			},
 		},
 	},
