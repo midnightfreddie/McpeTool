@@ -2,6 +2,7 @@ package mcpegql
 
 import (
 	"encoding/base64"
+	"encoding/hex"
 
 	"github.com/graphql-go/graphql"
 )
@@ -129,10 +130,48 @@ var dbValueType = graphql.NewObject(
 		Fields: graphql.Fields{
 			"data": &graphql.Field{
 				Type: graphql.NewList(graphql.Int),
+				Args: graphql.FieldConfigArgument{
+					"first": &graphql.ArgumentConfig{
+						Type:        graphql.Int,
+						Description: "Returns only first Int values of data",
+					},
+				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					value, ok := p.Source.([]byte)
-					if ok {
-						return value, nil
+					value, okValue := p.Source.([]byte)
+					first, okFirst := p.Args["first"].(int)
+					if okValue {
+						if okFirst {
+							if first > len(value) {
+								first = len(value)
+							}
+							return value[:first], nil
+						} else {
+							return value, nil
+						}
+					}
+					return nil, nil
+				},
+			},
+			"hexData": &graphql.Field{
+				Type: graphql.String,
+				Args: graphql.FieldConfigArgument{
+					"first": &graphql.ArgumentConfig{
+						Type:        graphql.Int,
+						Description: "Returns only first Int values of data",
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					value, okValue := p.Source.([]byte)
+					first, okFirst := p.Args["first"].(int)
+					if okValue {
+						if okFirst {
+							if first > len(value) {
+								first = len(value)
+							}
+							return hex.EncodeToString(value[:first]), nil
+						} else {
+							return hex.EncodeToString(value), nil
+						}
 					}
 					return nil, nil
 				},
