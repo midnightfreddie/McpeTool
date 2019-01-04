@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/midnightfreddie/McpeTool/api"
-	"github.com/midnightfreddie/McpeTool/graphql"
+	"github.com/midnightfreddie/McpeTool/mcpegql"
 	"github.com/midnightfreddie/McpeTool/world"
 	"github.com/urfave/cli"
 )
@@ -160,7 +160,7 @@ func main() {
 				fmt.Println("Starting GraphQL client and server at http://" + c.String("addr") + ":" + c.String("port"))
 				fmt.Println("  for world at " + worldPath)
 				fmt.Println("Press control-C to exit")
-				err = graphql.Server(&world, c.String("addr"), c.String("port"))
+				err = mcpegql.Server(&world, c.String("addr"), c.String("port"))
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
