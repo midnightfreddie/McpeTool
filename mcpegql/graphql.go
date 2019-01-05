@@ -1,6 +1,7 @@
 package mcpegql
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -29,12 +30,17 @@ func setHeaders(handler http.Handler) http.Handler {
 
 var saveGame *world.World
 
+// SetWorld sets the module-scope world reference
+func SetWorld(w *world.World) {
+	saveGame = w
+}
+
 func Server(w *world.World, bindAddress, bindPort string) error {
 	saveGame = w
 
 	Schema, err := graphql.NewSchema(graphql.SchemaConfig{
-		Query:    queryType,
-		Mutation: mutationType,
+		Query:    QueryType,
+		Mutation: MutationType,
 	})
 	if err != nil {
 		return err
@@ -53,4 +59,23 @@ func Server(w *world.World, bindAddress, bindPort string) error {
 	http.Handle("/", setHeaders(graphQlHandler))
 	log.Fatal(http.ListenAndServe(bindAddress+":"+bindPort, nil))
 	return nil
+}
+
+// Query takes a GraphQL query and returns JSON
+func Query(w *world.World, query string) (string, error) {
+	saveGame = w
+
+	Schema, err := graphql.NewSchema(graphql.SchemaConfig{
+		Query:    QueryType,
+		Mutation: MutationType,
+	})
+	if err != nil {
+		return "", err
+	}
+	result := graphql.Do(graphql.Params{
+		Schema:        Schema,
+		RequestString: query,
+	})
+	out, err := json.Marshal(result)
+	return string(out[:]), nil
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
-var queryType = graphql.NewObject(graphql.ObjectConfig{
+var QueryType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Query",
 	Fields: graphql.Fields{
 		"helloWorld": &graphql.Field{
@@ -70,7 +70,7 @@ var queryType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
-var mutationType = graphql.NewObject(graphql.ObjectConfig{
+var MutationType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Mutation",
 	Fields: graphql.Fields{
 		"dbPut": &graphql.Field{

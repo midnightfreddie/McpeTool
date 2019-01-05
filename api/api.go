@@ -9,6 +9,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/graphql-go/graphql"
+	"github.com/graphql-go/handler"
+	"github.com/midnightfreddie/McpeTool/mcpegql"
 	"github.com/midnightfreddie/McpeTool/world"
 )
 
@@ -163,6 +166,28 @@ func Server(world *world.World, bindAddress, bindPort string) error {
 		}
 		fmt.Fprintln(w, string(outJson[:]))
 	})
-	log.Fatal(http.ListenAndServe(bindAddress+":"+bindPort, setHeaders(mux)))
+
+	schema, err := graphql.NewSchema(graphql.SchemaConfig{
+		Query:    mcpegql.QueryType,
+		Mutation: mcpegql.MutationType,
+	})
+	if err != nil {
+		return err
+	}
+
+	// create a graphl-go HTTP handler
+	graphQlHandler := handler.New(&handler.Config{
+		Schema: &schema,
+		Pretty: false,
+		// GraphiQL provides simple web browser query interface pulled from Internet
+		GraphiQL: false,
+		// Playground provides fancier web browser query interface pulled from Internet
+		Playground: true,
+	})
+
+	http.Handle("/api/v1/db/", setHeaders(mux))
+	mcpegql.SetWorld(world)
+	http.Handle("/graphql/", setHeaders(graphQlHandler))
+	log.Fatal(http.ListenAndServe(bindAddress+":"+bindPort, nil))
 	return nil
 }

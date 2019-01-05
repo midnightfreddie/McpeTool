@@ -122,8 +122,9 @@ func main() {
 					return cli.NewExitError(err, 1)
 				}
 				defer world.Close()
-				fmt.Println("Starting API server at http://" + c.String("addr") + ":" + c.String("port") + "/")
-				fmt.Println("  for world at " + worldPath)
+				fmt.Println("Starting API server for world at " + worldPath)
+				fmt.Println("REST at http://" + c.String("addr") + ":" + c.String("port") + "/api/v1/db")
+				fmt.Println("GraphQL at http://" + c.String("addr") + ":" + c.String("port") + "/graphql")
 				fmt.Println("Press control-C to exit")
 				err = api.Server(&world, c.String("addr"), c.String("port"))
 				if err != nil {
@@ -133,37 +134,22 @@ func main() {
 			},
 		},
 		{
-			Name:    "graphql",
-			Aliases: []string{"g"},
-			Usage:   "Open world, start GraphQL handler at http://127.0.0.1:8080 . Control-c to exit.",
-			Flags: []cli.Flag{
-				pathFlag,
-				cli.StringFlag{
-					Name:   "addr",
-					Value:  "127.0.0.1",
-					Usage:  "`ADDRESS` on which to bind",
-					EnvVar: "MCPETOOL_ADDR",
-				},
-				cli.StringFlag{
-					Name:   "port",
-					Value:  "8080",
-					Usage:  "`PORT` on which to listen",
-					EnvVar: "MCPETOOL_PORT",
-				},
-			},
+			Name:      "graphql",
+			Aliases:   []string{"g"},
+			ArgsUsage: "<query>",
+			Usage:     "Execute GraphQL query",
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(worldPath)
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
 				defer world.Close()
-				fmt.Println("Starting GraphQL client and server at http://" + c.String("addr") + ":" + c.String("port"))
-				fmt.Println("  for world at " + worldPath)
-				fmt.Println("Press control-C to exit")
-				err = mcpegql.Server(&world, c.String("addr"), c.String("port"))
+				query := c.Args().Get(0)
+				out, err := mcpegql.Query(&world, query)
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
+				fmt.Print(out)
 				return nil
 			},
 		},
