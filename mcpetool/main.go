@@ -135,9 +135,12 @@ func main() {
 		},
 		{
 			Name:      "graphql",
-			Aliases:   []string{"g"},
+			Aliases:   []string{"gql", "g"},
 			ArgsUsage: "<query>",
 			Usage:     "Execute GraphQL query",
+			Flags: []cli.Flag{
+				pathFlag,
+			},
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(worldPath)
 				if err != nil {
