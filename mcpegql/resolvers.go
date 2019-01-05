@@ -108,6 +108,32 @@ var mutationType = graphql.NewObject(graphql.ObjectConfig{
 				return strconv.Itoa(len(data)) + " bytes put in db with key " + hex.EncodeToString(key), nil
 			},
 		},
+		"dbDelete": &graphql.Field{
+			Type:        graphql.String,
+			Description: "Put data as key. Must include one key specification and one data specification",
+			Args: graphql.FieldConfigArgument{
+				"key": &graphql.ArgumentConfig{
+					Type:        graphql.NewList(graphql.Int),
+					Description: "Key as byte array (native)",
+				},
+				"hexKey": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "Key as hex digits string",
+				},
+				"stringKey": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "Key as string",
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				key := []byte{byte(0), byte(0)}
+				err := saveGame.Delete(key)
+				if err != nil {
+					return nil, err
+				}
+				return hex.EncodeToString(key) + " deleted", nil
+			},
+		},
 	},
 })
 
