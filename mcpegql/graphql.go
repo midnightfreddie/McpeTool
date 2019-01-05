@@ -33,7 +33,8 @@ func Server(w *world.World, bindAddress, bindPort string) error {
 	saveGame = w
 
 	Schema, err := graphql.NewSchema(graphql.SchemaConfig{
-		Query: queryType,
+		Query:    queryType,
+		Mutation: mutationType,
 	})
 	if err != nil {
 		return err

@@ -3,6 +3,7 @@ package mcpegql
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"strconv"
 
 	"github.com/graphql-go/graphql"
 )
@@ -56,6 +57,55 @@ var queryType = graphql.NewObject(graphql.ObjectConfig{
 				} else {
 					return keyList, nil
 				}
+			},
+		},
+	},
+})
+
+var mutationType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Mutation",
+	Fields: graphql.Fields{
+		"dbPut": &graphql.Field{
+			Type:        graphql.String,
+			Description: "Put data as key. Must include one key specification and one data specification",
+			Args: graphql.FieldConfigArgument{
+				"key": &graphql.ArgumentConfig{
+					Type:        graphql.NewList(graphql.Int),
+					Description: "Key as byte array (native)",
+				},
+				"hexKey": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "Key as hex digits string",
+				},
+				"stringKey": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "Key as string",
+				},
+				"data": &graphql.ArgumentConfig{
+					Type:        graphql.NewList(graphql.Int),
+					Description: "Data as byte array (native)",
+				},
+				"hexData": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "Data as hex digits string",
+				},
+				"stringData": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "Data as string",
+				},
+				"base64Data": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "Data as base64 string",
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				data := []byte("Test put")
+				key := []byte{byte(0), byte(0)}
+				err := saveGame.Put(key, data)
+				if err != nil {
+					return nil, err
+				}
+				return strconv.Itoa(len(data)) + " bytes put in db with key " + hex.EncodeToString(key), nil
 			},
 		},
 	},
