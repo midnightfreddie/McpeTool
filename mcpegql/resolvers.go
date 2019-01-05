@@ -3,6 +3,7 @@ package mcpegql
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"strconv"
 
 	"github.com/graphql-go/graphql"
@@ -99,9 +100,46 @@ var mutationType = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				data := []byte("Test put")
-				key := []byte{byte(0), byte(0)}
-				err := saveGame.Put(key, data)
+				var err error
+				var key, data []byte
+				rawKey, okRaw := p.Args["key"].([]byte)
+				hexKey, okHex := p.Args["hexKey"].(string)
+				stringKey, okString := p.Args["stringKey"].(string)
+				if okRaw {
+					key = rawKey
+				} else if okHex {
+					key, err = hex.DecodeString(hexKey)
+					if err != nil {
+						return nil, err
+					}
+				} else if okString {
+					key = []byte(stringKey)
+				} else {
+					return nil, errors.New("Must provide a key")
+				}
+
+				rawData, okRaw := p.Args["data"].([]byte)
+				hexData, okHex := p.Args["hexData"].(string)
+				stringData, okString := p.Args["stringData"].(string)
+				base64Data, okBase64 := p.Args["base64Data"].(string)
+				if okRaw {
+					data = rawData
+				} else if okHex {
+					data, err = hex.DecodeString(hexData)
+					if err != nil {
+						return nil, err
+					}
+				} else if okString {
+					data = []byte(stringData)
+				} else if okBase64 {
+					data, err = base64.StdEncoding.DecodeString(base64Data)
+					if err != nil {
+						return nil, err
+					}
+				} else {
+					return nil, errors.New("Must provide data to put")
+				}
+				err = saveGame.Put(key, data)
 				if err != nil {
 					return nil, err
 				}
@@ -110,7 +148,7 @@ var mutationType = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"dbDelete": &graphql.Field{
 			Type:        graphql.String,
-			Description: "Put data as key. Must include one key specification and one data specification",
+			Description: "Delete data by key. Must provide one key specification",
 			Args: graphql.FieldConfigArgument{
 				"key": &graphql.ArgumentConfig{
 					Type:        graphql.NewList(graphql.Int),
@@ -126,8 +164,24 @@ var mutationType = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				key := []byte{byte(0), byte(0)}
-				err := saveGame.Delete(key)
+				var err error
+				var key []byte
+				rawKey, okRaw := p.Args["key"].([]byte)
+				hexKey, okHex := p.Args["hexKey"].(string)
+				stringKey, okString := p.Args["stringKey"].(string)
+				if okRaw {
+					key = rawKey
+				} else if okHex {
+					key, err = hex.DecodeString(hexKey)
+					if err != nil {
+						return nil, err
+					}
+				} else if okString {
+					key = []byte(stringKey)
+				} else {
+					return nil, errors.New("Must provide a key to delete")
+				}
+				err = saveGame.Delete(key)
 				if err != nil {
 					return nil, err
 				}
