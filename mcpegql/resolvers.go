@@ -60,6 +60,13 @@ var queryType = graphql.NewObject(graphql.ObjectConfig{
 				}
 			},
 		},
+		"entities": &graphql.Field{
+			Type:        graphql.NewList(graphql.String),
+			Description: "Get list of entities",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				return []string{"test", "hi"}, nil
+			},
+		},
 	},
 })
 
