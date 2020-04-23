@@ -4,6 +4,20 @@ An offline tool to read and write world data from Minecraft Pocket Edition and W
 
 The author has no affiliation with Minecraft, Mojang or Microsoft.
 
+## Build
+
+To build on linux.
+You need version 1 of `cli` so specify that explicity.
+- `go get github.com/urfave/cli@053ba9d`
+
+And some other packages
+- `go get github.com/midnightfreddie/nbt2json`
+- `go get github.com/midnightfreddie/goleveldb/leveldb`
+- `go get github.com/midnightfreddie/McpeTool`
+
+Finally you build the tool
+- `go build -o mcpetool $HOME/go/src/github.com/midnightfreddie/McpeTool/mcpetool/*.go`
+
 ## Use
 
 - Since LevelDB only allows one process to use it at a time, this tool can not be used while the world is running in Minecraft
@@ -28,9 +42,17 @@ Most world data is stored in a modified LevelDB key/value store. The `db` subcom
 - `mcpetool db get [--path <path/to/world>] [--json] [--dump] [--yaml] [--base64] [--binary] <hexkey>` - Returns the data for the given key in base64 or specified format
 	- Example: `mcpetool db get --path path/to/world --yaml 7e6c6f63616c5f706c61796572` returns local player data in YAML format
 	- Example: `mcpetool db get --path path/to/world --json 00000000000000002f00` returns overworld subchunk X=0, Z=0, Y=0 in JSON format if it exists
-- `mcpetool db put [--path <path/to/world>] [--json] [--yaml] [--base64] [--binary] <hexkey>` - Puts a key/value pair in the database, replacing the previous value if present or creating the key if not. They key and value are not checked for game validity; it will place any data in any key you specify.
+- `mcpetool db put [--path <path/to/world>] -i <input file> [--json] [--yaml] [--base64] [--binary] <hexkey>` - Puts a key/value pair in the database, replacing the previous value if present or creating the key if not. They key and value are not checked for game validity; it will place any data in any key you specify.  If -i is specified as "-" the value will be read from STDIN.
+	- Example: `mcpetool db put [--path <path/to/world>] -i data.json --json 00000000000000002f00` inserts the content of `data.json` as the value of subchunk X=0, Z=0, Y=0
 - `mcpetool db delete [--path <path/to/world>] <hexkey>` - Deletes the key/value pair for that key if present
 	- Example: `mcpetool db delete [--path <path/to/world>] 7e6c6f63616c5f706c61796572` deletes the local player data including inventory and equipped items. If you do this and play the world, you will spawn at the world spawn point.
+
+To modify a parameter of an entity, you would typically do the following:
+- `mcpetool db get --yaml 00000000000000002f00 > myworld.yaml`
+- edit `myworld.yaml` in your favourite editor to change parameters
+- `mcpetool db put -i myworld.yaml --yaml 00000000000000002f00`
+
+
 
 ### API
 
