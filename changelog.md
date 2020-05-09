@@ -1,6 +1,7 @@
 ## v0.3.2
 
-No true new features; just an update for newer dependencies and a fix for nbt long values getting messed up.
+The API can now read and write nbt2json-formatted nbt data if the db key is all nbt.
+Also updates for newer dependencies and a fix for nbt long values getting messed up.
 
 - Fixed CsCoords.ps1; it was miscalculating negative coordinates
 - Added go.mod

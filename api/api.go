@@ -179,7 +179,6 @@ func Server(world *world.World, bindAddress, bindPort string) error {
 		}
 		fmt.Fprintln(w, string(outJson[:]))
 	})
-
 	nbt2json.UseBedrockEncoding()
 	nbt2json.UseLongAsString()
 	http.Handle("/api/v1/db/", setHeaders(mux))
