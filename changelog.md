@@ -1,6 +1,6 @@
 ## v0.3.2
 
-In branch master before release.
+No true new features; just an update for newer dependencies and a fix for nbt long values getting messed up.
 
 - Fixed CsCoords.ps1; it was miscalculating negative coordinates
 - Added go.mod
