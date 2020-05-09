@@ -96,8 +96,8 @@ func main() {
 			Email: "jim@jimnelson.us",
 		},
 	}
-	app.Copyright = "(c) 2018 Jim Nelson"
-	app.Usage = "Reads and writes a Minecraft Pocket Edition world directory."
+	app.Copyright = "(c) 2018, 2020 Jim Nelson"
+	app.Usage = "Reads and writes a Minecraft Bedrock Edition world directory."
 	app.Flags = []cli.Flag{
 		&pathFlag,
 	}

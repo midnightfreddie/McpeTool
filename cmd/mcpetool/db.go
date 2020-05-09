@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 
@@ -53,6 +52,8 @@ var dbCommand = cli.Command{
 			Action: func(c *cli.Context) error {
 				var outData []byte
 				var err error
+				nbt2json.UseBedrockEncoding()
+				nbt2json.UseLongAsString()
 				world, err := world.OpenWorld(worldPath)
 				if err != nil {
 					return cli.NewExitError(err, 1)
@@ -75,12 +76,12 @@ var dbCommand = cli.Command{
 				if c.String("dump") == "true" {
 					outData = []byte(hex.Dump(value))
 				} else if c.String("json") == "true" {
-					outData, err = nbt2json.Nbt2Json(value, binary.LittleEndian, comment)
+					outData, err = nbt2json.Nbt2Json(value, comment)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
 				} else if c.String("yaml") == "true" {
-					outData, err = nbt2json.Nbt2Yaml(value, binary.LittleEndian, comment)
+					outData, err = nbt2json.Nbt2Yaml(value, comment)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
@@ -89,7 +90,7 @@ var dbCommand = cli.Command{
 				} else if c.String("binary") == "true" {
 					outData = value
 				} else {
-					outData, err = nbt2json.Nbt2Json(value, binary.LittleEndian, comment)
+					outData, err = nbt2json.Nbt2Json(value, comment)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
@@ -115,6 +116,8 @@ var dbCommand = cli.Command{
 			Action: func(c *cli.Context) error {
 				var value []byte
 				var err error
+				nbt2json.UseBedrockEncoding()
+				nbt2json.UseLongAsString()
 				world, err := world.OpenWorld(worldPath)
 				key, err := hex.DecodeString(c.Args().Get(0))
 				if err != nil {
@@ -126,15 +129,15 @@ var dbCommand = cli.Command{
 					return cli.NewExitError(err, 1)
 				}
 				if c.String("json") == "true" {
-					value, err = nbt2json.Json2Nbt(inputData, binary.LittleEndian)
+					value, err = nbt2json.Json2Nbt(inputData)
 				} else if c.String("yaml") == "true" {
-					value, err = nbt2json.Yaml2Nbt(inputData, binary.LittleEndian)
+					value, err = nbt2json.Yaml2Nbt(inputData)
 					// } else if c.String("base64") == "true" {
 					// 	value, err = base64.StdEncoding.DecodeString(string(inputData[:]))
 				} else if c.String("binary") == "true" {
 					value = inputData
 				} else {
-					value, err = nbt2json.Json2Nbt(inputData[:], binary.LittleEndian)
+					value, err = nbt2json.Json2Nbt(inputData[:])
 				}
 				if err != nil {
 					return cli.NewExitError(err, 1)

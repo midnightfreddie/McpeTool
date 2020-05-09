@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/hex"
 	"strconv"
 
@@ -29,6 +28,8 @@ var levelDatCommand = cli.Command{
 			Action: func(c *cli.Context) error {
 				var outData []byte
 				var err error
+				nbt2json.UseBedrockEncoding()
+				nbt2json.UseLongAsString()
 				myWorld, err := world.OpenWorld(worldPath)
 				if err != nil {
 					return cli.NewExitError(err, 1)
@@ -42,7 +43,7 @@ var levelDatCommand = cli.Command{
 				case c.String("dump") == "true":
 					outData = []byte(hex.Dump(levelDat))
 				case c.String("yaml") == "true":
-					outData, err = nbt2json.Nbt2Yaml(levelDat, binary.LittleEndian, jsonComment+" | level.dat version "+string(version)+" | Path "+worldPath)
+					outData, err = nbt2json.Nbt2Yaml(levelDat, jsonComment+" | level.dat version "+string(version)+" | Path "+worldPath)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
@@ -51,7 +52,7 @@ var levelDatCommand = cli.Command{
 				case c.String("binary") == "true":
 					outData = levelDat
 				default:
-					outData, err = nbt2json.Nbt2Json(levelDat, binary.LittleEndian, jsonComment+" | level.dat | Path "+worldPath)
+					outData, err = nbt2json.Nbt2Json(levelDat, jsonComment+" | level.dat | Path "+worldPath)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
@@ -82,6 +83,8 @@ var levelDatCommand = cli.Command{
 			Action: func(c *cli.Context) error {
 				var levelDat []byte
 				var err error
+				nbt2json.UseBedrockEncoding()
+				nbt2json.UseLongAsString()
 				version, err := strconv.Atoi(c.String("ver"))
 				if err != nil {
 					return cli.NewExitError(err, 1)
@@ -97,7 +100,7 @@ var levelDatCommand = cli.Command{
 				defer myWorld.Close()
 				switch {
 				case c.String("yaml") == "true":
-					levelDat, err = nbt2json.Yaml2Nbt(inData, binary.LittleEndian)
+					levelDat, err = nbt2json.Yaml2Nbt(inData)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
@@ -112,7 +115,7 @@ var levelDatCommand = cli.Command{
 					}
 					err = myWorld.PutLevelDat(levelDat)
 				default:
-					levelDat, err = nbt2json.Json2Nbt(inData, binary.LittleEndian)
+					levelDat, err = nbt2json.Json2Nbt(inData)
 					if err != nil {
 						return cli.NewExitError(err, 1)
 					}
