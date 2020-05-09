@@ -1,2 +1,9 @@
+### ignore extensionless files
+*
+!*.*
+!*/
+###
+
 *.exe
 db/
+*.mcworld
