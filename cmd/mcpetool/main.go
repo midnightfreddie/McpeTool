@@ -8,48 +8,54 @@ import (
 
 	"github.com/midnightfreddie/McpeTool/api"
 	"github.com/midnightfreddie/McpeTool/world"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
-const appVersion = "0.3.0"
+const appVersion = "0.3.2-pre"
 const jsonComment = "MCPE Tool v" + appVersion
 
 var worldPath, inFile, outFile string
 
 var pathFlag = cli.StringFlag{
-	Name:        "path, p",
+	Name:        "path",
+	Aliases:     []string{"p"},
 	Value:       ".",
 	Usage:       "`FILEPATH` of world",
-	EnvVar:      "MCPETOOL_WORLD",
+	EnvVars:     []string{"MCPETOOL_WORLD"},
 	Destination: &worldPath,
 }
 var inFlag = cli.StringFlag{
-	Name:        "in, i",
+	Name:        "in",
+	Aliases:     []string{"i"},
 	Value:       "-",
 	Usage:       "Input `FILE` path",
 	Destination: &inFile,
 }
 var outFlag = cli.StringFlag{
-	Name:        "out, o",
+	Name:        "out",
+	Aliases:     []string{"o"},
 	Value:       "-",
 	Usage:       "Output `FILE` path",
 	Destination: &outFile,
 }
 var dumpFlag = cli.BoolFlag{
-	Name:  "dump, d",
-	Usage: "Hexdump format",
+	Name:    "dump",
+	Aliases: []string{"d"},
+	Usage:   "Hexdump format",
 }
 var base64Flag = cli.BoolFlag{
 	Name:  "base64",
 	Usage: "Base64 format",
 }
 var jsonFlag = cli.BoolFlag{
-	Name:  "json, j",
-	Usage: "JSON format",
+	Name:    "json",
+	Aliases: []string{"j"},
+	Usage:   "JSON format",
 }
 var yamlFlag = cli.BoolFlag{
-	Name:  "yaml, yml, y",
-	Usage: "YAML format",
+	Name:    "yaml",
+	Aliases: []string{"yml", "y"},
+	Usage:   "YAML format",
 }
 var binaryFlag = cli.BoolFlag{
 	Name:  "binary",
@@ -84,8 +90,8 @@ func main() {
 	app.Name = "mcpetool"
 	app.Version = appVersion
 	app.Compiled = time.Now()
-	app.Authors = []cli.Author{
-		cli.Author{
+	app.Authors = []*cli.Author{
+		&cli.Author{
 			Name:  "Jim Nelson",
 			Email: "jim@jimnelson.us",
 		},
@@ -93,11 +99,11 @@ func main() {
 	app.Copyright = "(c) 2018 Jim Nelson"
 	app.Usage = "Reads and writes a Minecraft Pocket Edition world directory."
 	app.Flags = []cli.Flag{
-		pathFlag,
+		&pathFlag,
 	}
-	app.Commands = []cli.Command{
-		levelDatCommand,
-		dbCommand,
+	app.Commands = []*cli.Command{
+		&levelDatCommand,
+		&dbCommand,
 		{
 			Name:    "api",
 			Aliases: []string{"www"},

@@ -9,5 +9,5 @@ require (
 	github.com/midnightfreddie/nbt2json v0.3.3
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.10.0 // indirect
-	github.com/urfave/cli v1.22.4
+	github.com/urfave/cli/v2 v2.2.0
 )

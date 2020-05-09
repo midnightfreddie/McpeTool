@@ -8,23 +8,23 @@ import (
 
 	"github.com/midnightfreddie/McpeTool/world"
 	"github.com/midnightfreddie/nbt2json"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var levelDatCommand = cli.Command{
 	Name:  "leveldat",
 	Usage: "Get or put level.dat data",
-	Subcommands: []cli.Command{
+	Subcommands: []*cli.Command{
 		{
 			Name:  "get",
 			Usage: "Returns level.dat in nbt-to-JSON format",
 			Flags: []cli.Flag{
-				pathFlag,
-				outFlag,
-				dumpFlag,
-				yamlFlag,
-				base64Flag,
-				binaryFlag,
+				&pathFlag,
+				&outFlag,
+				&dumpFlag,
+				&yamlFlag,
+				&base64Flag,
+				&binaryFlag,
 			},
 			Action: func(c *cli.Context) error {
 				var outData []byte
@@ -67,17 +67,17 @@ var levelDatCommand = cli.Command{
 			Name:  "put",
 			Usage: "Overwrites level.dat with nbt-to-JSON formatted data",
 			Flags: []cli.Flag{
-				pathFlag,
-				cli.StringFlag{
+				&pathFlag,
+				&cli.StringFlag{
 					Name:  "ver",
 					Value: "6",
 					Usage: "level.dat version for header. Ignored for binary and base64 input.",
 				},
-				inFlag,
-				dumpFlag,
-				yamlFlag,
-				base64Flag,
-				binaryFlag,
+				&inFlag,
+				&dumpFlag,
+				&yamlFlag,
+				&base64Flag,
+				&binaryFlag,
 			},
 			Action: func(c *cli.Context) error {
 				var levelDat []byte

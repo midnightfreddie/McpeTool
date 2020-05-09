@@ -8,18 +8,18 @@ import (
 	"github.com/midnightfreddie/McpeTool/api"
 	"github.com/midnightfreddie/McpeTool/world"
 	"github.com/midnightfreddie/nbt2json"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var dbCommand = cli.Command{
 	Name:  "db",
 	Usage: "List, get, put, or delete leveldb keys",
-	Subcommands: []cli.Command{
+	Subcommands: []*cli.Command{
 		{
 			Name:    "list",
 			Aliases: []string{"keys", "k"},
 			Flags: []cli.Flag{
-				pathFlag,
+				&pathFlag,
 			},
 			Usage: "Lists all keys in the database.",
 			Action: func(c *cli.Context) error {
@@ -43,12 +43,12 @@ var dbCommand = cli.Command{
 			ArgsUsage: "<key>",
 			Usage:     "Retruns a key's value in base64 format.",
 			Flags: []cli.Flag{
-				pathFlag,
-				outFlag,
-				jsonFlag,
-				yamlFlag,
-				dumpFlag,
-				binaryFlag,
+				&pathFlag,
+				&outFlag,
+				&jsonFlag,
+				&yamlFlag,
+				&dumpFlag,
+				&binaryFlag,
 			},
 			Action: func(c *cli.Context) error {
 				var outData []byte
@@ -106,11 +106,11 @@ var dbCommand = cli.Command{
 			ArgsUsage: "<key>",
 			Usage:     "Put a key/value into the DB. Overwrites the key if already present. Input is base64-formatted by default.",
 			Flags: []cli.Flag{
-				pathFlag,
-				inFlag,
-				jsonFlag,
-				yamlFlag,
-				binaryFlag,
+				&pathFlag,
+				&inFlag,
+				&jsonFlag,
+				&yamlFlag,
+				&binaryFlag,
 			},
 			Action: func(c *cli.Context) error {
 				var value []byte
@@ -151,7 +151,7 @@ var dbCommand = cli.Command{
 			ArgsUsage: "<key>",
 			Usage:     "Deletes a key and its value.",
 			Flags: []cli.Flag{
-				pathFlag,
+				&pathFlag,
 			},
 			Action: func(c *cli.Context) error {
 				world, err := world.OpenWorld(worldPath)
