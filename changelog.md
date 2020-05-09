@@ -9,6 +9,8 @@ In branch master before release.
 - Updated to urfave/cli/v2
 - Started this changelog (previous version notes are from memory or release page)
 - **Breaking change**: upgraded to nbt2json v0.4.0. NBT long values (int64) are now represented as strings instead of numbers because many JSON libraries won't preserve a 64-bit integer value.
+- Http address and port are now configurable
+- Aded GitHub link to help page
 
 ## v0.3.0
 
