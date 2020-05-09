@@ -57,3 +57,4 @@ I intend to make the next API version with Swagger, and add more features and da
 	- GET http://localhost:8080/api/v1/db/7e6c6f63616c5f706c61796572 - Returns `7e6c6f63616c5f706c61796572` in a JSON object with the base64-encoded value.
 	- PUT http://localhost:8080/api/v1/db/7e6c6f63616c5f706c61796572 - Creates/overwrites `7e6c6f63616c5f706c61796572` with request body formatted as seen with the GET requests
 	- DELETE http://localhost:8080/api/v1/db/7e6c6f63616c5f706c61796572 - Deletes `7e6c6f63616c5f706c61796572` from LevelDB
+	- Adding `?json` to the end of the url will provide the data in nbt2json format if the whole db key is nbt. For PUT requests, `?json` will only try to use the nbt2json data to write to the db.
