@@ -77,5 +77,8 @@ func Query(w *world.World, query string) (string, error) {
 		RequestString: query,
 	})
 	out, err := json.Marshal(result)
+	if err != nil {
+		return "", err
+	}
 	return string(out[:]), nil
 }

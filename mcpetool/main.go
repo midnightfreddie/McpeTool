@@ -137,7 +137,7 @@ func main() {
 			Name:      "graphql",
 			Aliases:   []string{"gql", "g"},
 			ArgsUsage: "<query>",
-			Usage:     "Execute GraphQL query",
+			Usage:     "Execute GraphQL query or mutation",
 			Flags: []cli.Flag{
 				pathFlag,
 			},
