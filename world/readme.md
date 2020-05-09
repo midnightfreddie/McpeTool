@@ -1,0 +1,1 @@
+The `world` package contains the functions to do very basid get/put/delete functions in leveldb and/or level.dat.

@@ -1,6 +1,6 @@
-# MCPE Tool
+# MCPE (Bedrock) Tool
 
-An offline tool to read and write world data from Minecraft Pocket Edition and Win10 Edition (Bedrock). It can also read and write the raw LevelDB keys for Minecraft 9.0.
+An offline tool to read and write world data from Minecraft Bedrock Edition.
 
 The author has no affiliation with Minecraft, Mojang or Microsoft.
 

@@ -1,0 +1,1 @@
+Examples in this folder are out of date, for earlier versions of Bedrock / MCPE.
