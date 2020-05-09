@@ -62,10 +62,29 @@ func ConvertKey(k []byte) (stringKey, hexKey string) {
 	return
 }
 
+// Handler wrapper to allow adding headers to all responses
+// concept yoinked from http://echorand.me/dissecting-golangs-handlerfunc-handle-and-defaultservemux.html
+func setHeaders(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set Origin headers for CORS
+		// yoinked from http://stackoverflow.com/questions/12830095/setting-http-headers-in-golang Matt Bucci's answer
+		if origin := r.Header.Get("Origin"); origin != "" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+			w.Header().Set("Access-Control-Allow-Headers",
+				"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		}
+		// Since we're dynamically setting origin, don't let it get cached
+		w.Header().Set("Vary", "Origin")
+		handler.ServeHTTP(w, r)
+	})
+}
+
 // Server is the http REST API server
-func Server(world *world.World) error {
+func Server(world *world.World, bindAddress, bindPort string) error {
 	apiDbPath := "/api/v1/db/"
-	http.HandleFunc(apiDbPath, func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc(apiDbPath, func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		outData := NewResponse()
 		relPath := r.URL.Path[len(apiDbPath):]
@@ -144,6 +163,8 @@ func Server(world *world.World) error {
 		}
 		fmt.Fprintln(w, string(outJson[:]))
 	})
-	log.Fatal(http.ListenAndServe("127.0.0.1:8080", nil))
+
+	http.Handle("/api/v1/db/", setHeaders(mux))
+	log.Fatal(http.ListenAndServe(bindAddress+":"+bindPort, nil))
 	return nil
 }

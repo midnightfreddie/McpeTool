@@ -20,10 +20,11 @@ COMMANDS:
    help, h   Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --path FILEPATH, -p FILEPATH  FILEPATH of world (default: ".") [$MCPETOOL_WORLD]
-   --help, -h                    show help (default: false)
-   --version, -v                 print the version (default: false)
+   --help, -h     show help (default: false)
+   --version, -v  print the version (default: false)
 
 COPYRIGHT:
    (c) 2018, 2020 Jim Nelson
+
+WEBSITE: https://github.com/midnightfreddie/McpeTool
 ```
