@@ -6,17 +6,7 @@ The author has no affiliation with Minecraft, Mojang or Microsoft.
 
 ## Build
 
-To build on linux.
-You need version 1 of `cli` so specify that explicity.
-- `go get github.com/urfave/cli@053ba9d`
-
-And some other packages
-- `go get github.com/midnightfreddie/nbt2json`
-- `go get github.com/midnightfreddie/goleveldb/leveldb`
-- `go get github.com/midnightfreddie/McpeTool`
-
-Finally you build the tool
-- `go build -o mcpetool $HOME/go/src/github.com/midnightfreddie/McpeTool/mcpetool/*.go`
+The go.mod and go.sum files have been added, so `go build ./cmd/mcpetool` will now pull the approrpriate dependencies.
 
 ## Use
 
