@@ -11,6 +11,8 @@ No true new features; just an update for newer dependencies and a fix for nbt lo
 - **Breaking change**: upgraded to nbt2json v0.4.0. NBT long values (int64) are now represented as strings instead of numbers because many JSON libraries won't preserve a 64-bit integer value.
 - Http address and port are now configurable
 - Aded GitHub link to help page
+- Added CORS header to API to allow all origins
+- Added `?json` parameter to api to allow GETs to provide nbt in json format if the entire chunk is nbt, and PUT will use the json instead of base64 when PUTting with `?json` (I can't believe I hadn't done this before!)
 
 ## v0.3.0
 

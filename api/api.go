@@ -9,21 +9,24 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/midnightfreddie/nbt2json"
+
 	"github.com/midnightfreddie/McpeTool/world"
 )
 
-var apiVersion = "1.0"
+var apiVersion = "1.1"
 
 // Response is the default JSON response object
 type Response struct {
 	key        []byte
 	keys       [][]byte
 	data       []byte
-	ApiVersion string `json:"apiVersion"`
-	Keys       []Key  `json:"keys,omitempty"`
-	StringKey  string `json:"stringKey,omitempty"`
-	HexKey     string `json:"hexKey,omitempty"`
-	Base64Data string `json:"base64Data,omitempty"`
+	ApiVersion string          `json:"apiVersion"`
+	Keys       []Key           `json:"keys,omitempty"`
+	StringKey  string          `json:"stringKey,omitempty"`
+	HexKey     string          `json:"hexKey,omitempty"`
+	Base64Data string          `json:"base64Data,omitempty"`
+	Nbt2Json   json.RawMessage `json:"nbt2Json,omitempty"`
 }
 
 // NewResponse initializes and returns a Response object
@@ -113,6 +116,10 @@ func Server(world *world.World, bindAddress, bindPort string) error {
 					http.Error(w, err.Error(), 500)
 					return
 				}
+				if _, ok := r.URL.Query()["json"]; ok {
+					// ignore nbt2json error and just return the rest of the response
+					outData.Nbt2Json, _ = nbt2json.Nbt2Json(outData.data, "")
+				}
 			}
 		case "DELETE":
 			if relPath == "" {
@@ -136,10 +143,19 @@ func Server(world *world.World, bindAddress, bindPort string) error {
 				http.Error(w, "Error parsing body: "+err.Error(), 400)
 				return
 			}
-			data, err := base64.StdEncoding.DecodeString(inJson.Base64Data)
-			if err != nil {
-				http.Error(w, "Error decoding base64Data: "+err.Error(), 400)
-				return
+			var data []byte
+			if _, ok := r.URL.Query()["json"]; ok {
+				data, err = nbt2json.Json2Nbt(inJson.Nbt2Json)
+				if err != nil {
+					http.Error(w, "Error decoding nbt2json field: "+err.Error(), 400)
+					return
+				}
+			} else {
+				data, err = base64.StdEncoding.DecodeString(inJson.Base64Data)
+				if err != nil {
+					http.Error(w, "Error decoding base64Data: "+err.Error(), 400)
+					return
+				}
 			}
 			err = world.Put(outData.key, data)
 			if err != nil {
@@ -164,6 +180,8 @@ func Server(world *world.World, bindAddress, bindPort string) error {
 		fmt.Fprintln(w, string(outJson[:]))
 	})
 
+	nbt2json.UseBedrockEncoding()
+	nbt2json.UseLongAsString()
 	http.Handle("/api/v1/db/", setHeaders(mux))
 	log.Fatal(http.ListenAndServe(bindAddress+":"+bindPort, nil))
 	return nil
