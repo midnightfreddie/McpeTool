@@ -24,6 +24,9 @@ func myCompleter(d prompt.Document) []prompt.Suggest {
 func TestWhatevs(t *testing.T) {
 	fmt.Println("Just testing...")
 	L := lua.NewState()
+	if err := Blua(L); err != nil {
+		t.Error("Blua: ", err.Error())
+	}
 	l := prompt.Input("> ", myCompleter)
 	if err := L.DoString(l); err != nil {
 		t.Error("DoString: ", err.Error())
