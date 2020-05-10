@@ -9,7 +9,7 @@ This branch broke off from v0.3.0 and worked at various times towards:
   - It has a data service, but I haven't refamiliarized myself with what it does
   - The only active component shows a "chunk map", just a black & white set of squares representing defined chunks in the world
   - It's pretty clunky to use; need to `npm install`, then `npm run ng serve` and also have the command line api running on localhost:8080
-  - Eventually the app would have been bundlded into the cli api
+  - Eventually the app would have been bundled into the cli api
   - I don't expect to revisit this part of the project
 - GraphQL API (mcpegql/)
   - It looks like I didn't get beyond get/put/delete of raw keys
