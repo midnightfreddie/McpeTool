@@ -7,3 +7,4 @@
 *.exe
 db/
 *.mcworld
+.DS_Store
