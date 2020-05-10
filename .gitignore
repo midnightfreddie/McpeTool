@@ -8,3 +8,5 @@
 db/
 node_modules
 *.mcworld
+.vscode/
+.DS_store
