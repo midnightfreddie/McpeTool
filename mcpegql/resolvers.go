@@ -9,16 +9,10 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
+// QueryType is exported to the api module
 var QueryType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Query",
 	Fields: graphql.Fields{
-		"helloWorld": &graphql.Field{
-			Type:        graphql.String,
-			Description: "Static GraphQL sanity test",
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "Hello World!", nil
-			},
-		},
 		"dbKeys": &graphql.Field{
 			Type:        graphql.NewList(dbKeyType),
 			Description: "Get list of keys in LevelDB. Specifying multiple boolean arguments is invalid",
@@ -70,6 +64,7 @@ var QueryType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
+// MutatinoType is exported to the api module
 var MutationType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Mutation",
 	Fields: graphql.Fields{
