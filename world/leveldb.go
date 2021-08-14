@@ -36,7 +36,9 @@ func OpenWorld(path string) (World, error) {
 
 	world.db, err = leveldb.OpenFile(dbPath, nil)
 	if err != nil {
-		_ = world.db.Close()
+		if world.db != nil {
+			_ = world.db.Close()
+		}
 		return world, err
 	}
 	return world, nil
