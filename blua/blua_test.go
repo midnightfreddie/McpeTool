@@ -17,10 +17,6 @@ func TestWhatevs(t *testing.T) {
 	if err := Blua(L); err != nil {
 		t.Error("Blua: ", err.Error())
 	}
-	l = `io.write(db[1], "\n")`
-	if err := L.DoString(l); err != nil {
-		t.Error("DoString: ", err.Error())
-	}
 	l = "open_world()"
 	if err := L.DoString(l); err != nil {
 		t.Error("DoString: ", err.Error())
