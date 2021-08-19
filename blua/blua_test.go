@@ -16,7 +16,9 @@ func TestWhatevs(t *testing.T) {
 	if err := Blua(L); err != nil {
 		t.Error("Blua: ", err.Error())
 	}
+	dbModule(L)
 	l := "print \"this is the output of a print command\""
+	l = "db.test()"
 	if err := L.DoString(l); err != nil {
 		t.Error("DoString: ", err.Error())
 	}

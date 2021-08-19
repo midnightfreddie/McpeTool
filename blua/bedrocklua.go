@@ -9,5 +9,6 @@ import (
 // Blua injects functions into a gopher-lua state
 func Blua(L *lua.LState) error {
 	fmt.Println("blua doesn't do anything yet")
+	dbModule(L)
 	return nil
 }
