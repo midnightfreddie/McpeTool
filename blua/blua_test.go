@@ -17,12 +17,19 @@ func TestWhatevs(t *testing.T) {
 	if err := Blua(L); err != nil {
 		t.Error("Blua: ", err.Error())
 	}
-	Blua(L)
+	l = `io.write(db[1], "\n")`
+	if err := L.DoString(l); err != nil {
+		t.Error("DoString: ", err.Error())
+	}
 	l = "open_world()"
 	if err := L.DoString(l); err != nil {
 		t.Error("DoString: ", err.Error())
 	}
 	l = "db.get_keys()"
+	if err := L.DoString(l); err != nil {
+		t.Error("DoString: ", err.Error())
+	}
+	l = `io.write(db.keys[1][1])`
 	if err := L.DoString(l); err != nil {
 		t.Error("DoString: ", err.Error())
 	}
