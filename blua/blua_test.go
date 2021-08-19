@@ -11,14 +11,18 @@ import (
 //   try to put stuff here instead of a new executable or mcpetool
 // Go will cache test results; run `go test` with `-count=1` to skip caching the interactive input/output
 func TestWhatevs(t *testing.T) {
+	var l string
 	fmt.Println("Just testing...")
 	L := lua.NewState()
 	if err := Blua(L); err != nil {
 		t.Error("Blua: ", err.Error())
 	}
-	dbModule(L)
-	l := "print \"this is the output of a print command\""
-	l = "db.test()"
+	Blua(L)
+	l = "open_world()"
+	if err := L.DoString(l); err != nil {
+		t.Error("DoString: ", err.Error())
+	}
+	l = "db.get_keys()"
 	if err := L.DoString(l); err != nil {
 		t.Error("DoString: ", err.Error())
 	}
