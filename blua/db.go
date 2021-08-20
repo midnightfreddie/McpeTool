@@ -1,7 +1,7 @@
 package blua
 
 import (
-	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 
 	lua "github.com/yuin/gopher-lua"
@@ -32,12 +32,19 @@ func dbGetKeys(L *lua.LState) int {
 		for _, k := range keys {
 			// string keys
 			// FIXME: This is not identifying any string keys
-			if b64Bytes, err := base64.StdEncoding.DecodeString(string(k[:])); err == nil {
-				fmt.Println(b64Bytes[0])
-				slt.Append(lua.LString(string(b64Bytes[:])))
-				fmt.Println(string(b64Bytes[:]))
+			//  ah, it's actually just a string, not base64-encooded
+			if stringkey, hexkey := convertKey(k); stringkey != "" {
+				fmt.Println(stringkey)
+				slt.Append(lua.LString(stringkey))
 			} else {
+				// fmt.Println(err)
+				/*
+					if k[0] != 0 {
+						fmt.Println(string(k[:]))
+					}
+				*/
 				// handle non-string keys here
+				_ = hexkey // temp
 			}
 			// raw keys
 			kkt := L.NewTable()
@@ -48,4 +55,19 @@ func dbGetKeys(L *lua.LState) int {
 		}
 	}
 	return 0
+}
+
+// copied from api/api.go ConvertKey
+func convertKey(k []byte) (stringKey, hexKey string) {
+	allAscii := true
+	for i := range k {
+		if k[i] < 0x20 || k[i] > 0x7e {
+			allAscii = false
+		}
+	}
+	if allAscii {
+		stringKey = string(k[:])
+	}
+	hexKey = hex.EncodeToString(k)
+	return
 }
