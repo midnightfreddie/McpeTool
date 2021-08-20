@@ -33,4 +33,8 @@ func TestWhatevs(t *testing.T) {
 	if err := L.DoString(l); err != nil {
 		t.Error("DoString: ", err.Error())
 	}
+	l = `io.write(db.hex_keys[1], "\n")`
+	if err := L.DoString(l); err != nil {
+		t.Error("DoString: ", err.Error())
+	}
 }

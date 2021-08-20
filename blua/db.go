@@ -2,7 +2,6 @@ package blua
 
 import (
 	"encoding/hex"
-	"fmt"
 
 	lua "github.com/yuin/gopher-lua"
 )
@@ -26,26 +25,23 @@ func dbGetKeys(L *lua.LState) int {
 		L.RawSet(db, lua.LString("raw_keys"), klt)
 		slt := L.NewTable()
 		L.RawSet(db, lua.LString("string_keys"), slt)
-		slt.Append(lua.LString("test-delete-me"))
-		clt := L.NewTable()
-		L.RawSet(db, lua.LString("chunk_keys"), clt)
+		hlt := L.NewTable()
+		L.RawSet(db, lua.LString("hex_keys"), hlt)
+		/*
+			clt := L.NewTable()
+			L.RawSet(db, lua.LString("chunk_keys"), clt)
+		*/
 		for _, k := range keys {
+			stringkey, hexkey := convertKey(k)
 			// string keys
-			// FIXME: This is not identifying any string keys
-			//  ah, it's actually just a string, not base64-encooded
-			if stringkey, hexkey := convertKey(k); stringkey != "" {
-				fmt.Println(stringkey)
+			if stringkey != "" {
 				slt.Append(lua.LString(stringkey))
 			} else {
-				// fmt.Println(err)
-				/*
-					if k[0] != 0 {
-						fmt.Println(string(k[:]))
-					}
-				*/
 				// handle non-string keys here
 				_ = hexkey // temp
 			}
+			// hex keys
+			hlt.Append(lua.LString(hexkey))
 			// raw keys
 			kkt := L.NewTable()
 			klt.Append(kkt)
