@@ -18,18 +18,18 @@ func TestWhatevs(t *testing.T) {
 		t.Error("Blua: ", err.Error())
 	}
 	l = "open_world()"
-	if err := L.DoString(l); err == nil {
+	if err := L.DoString(l); err != nil {
+		t.Error("DoString: ", err.Error())
+	}
+	l = "db.get_keys()"
+	if err := L.DoString(l); err != nil {
+		t.Error("DoString: ", err.Error())
+	}
+	l = `io.write(db.raw_keys[1][1], "\n")`
+	if err := L.DoString(l); err != nil {
 		t.Error("DoString: ", err.Error())
 	}
 	/*
-		l = "db.get_keys()"
-		if err := L.DoString(l); err != nil {
-			t.Error("DoString: ", err.Error())
-		}
-		l = `io.write(db.raw_keys[1][1], "\n")`
-		if err := L.DoString(l); err != nil {
-			t.Error("DoString: ", err.Error())
-		}
 		l = `io.write(db.string_keys[1], "\n")`
 		if err := L.DoString(l); err != nil {
 			t.Error("DoString: ", err.Error())
