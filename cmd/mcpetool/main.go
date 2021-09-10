@@ -12,7 +12,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const appVersion = "0.3.3-dev"
+const appVersion = "0.3.4-dev"
 const jsonComment = "MCPE Tool v" + appVersion
 
 var worldPath, inFile, outFile string
