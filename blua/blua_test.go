@@ -12,7 +12,7 @@ import (
 // Go will cache test results; run `go test` with `-count=1` to skip caching the interactive input/output
 func TestWhatevs(t *testing.T) {
 	var l string
-	fmt.Println("NOTE: Blua test is currently hard-coded to files on developer's systems")
+	fmt.Println("NOTE: Blua test uses the world path found in environment variable MCPETOOL_WORLD")
 	L := lua.NewState()
 	if err := Blua(L); err != nil {
 		t.Error("Blua: ", err.Error())

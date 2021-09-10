@@ -1,11 +1,16 @@
 package blua
 
 import (
+	"os"
+
 	"github.com/midnightfreddie/McpeTool/world"
 	lua "github.com/yuin/gopher-lua"
 )
 
 var myWorld world.World
+
+// Store the path of the world in $MCPETOOL_WORLD
+var worldPath = os.Getenv("MCPETOOL_WORLD")
 
 // Blua injects functions into a gopher-lua state
 func Blua(L *lua.LState) error {
@@ -21,8 +26,7 @@ func openWorld(L *lua.LState) int {
 		myWorld.Close()
 	}
 	// TODO: Make path a lua parameter
-	path := `C:\Users\jim\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds\fEgcYZ-hBwA=`
-	myWorld, err = world.OpenWorld(path)
+	myWorld, err = world.OpenWorld(worldPath)
 	if err != nil {
 		panic(err)
 	}
