@@ -60,27 +60,28 @@ func dbGetKeys(L *lua.LState) int {
 //   currently does not handle errors
 func dbGet(L *lua.LState) int {
 	// var outTable = L.NewTable()
-	var outBytes []byte
+	// var outBytes []byte
+	var keyBytes []byte
 	key := L.ToTable(1)
-	outBytes = make([]byte, L.ObjLen(key))
+	keyBytes = make([]byte, L.ObjLen(key))
 	// using my own counter, assuming input is lua table as byte array in correct order
 	//  could/should use some more validation
 	var i int
 	key.ForEach(func(_ lua.LValue, b lua.LValue) {
 		if myByte, ok := b.(lua.LNumber); ok {
 			// TODO: Ensure myByte is in range for byte, handle error if not
-			outBytes[i] = byte(myByte)
+			keyBytes[i] = byte(myByte)
 		}
 		i++
 	})
-	// for i := 0; i < len(outBytes); i++ {
-	// 	outBytes[i] = key(1)
-	// }
-	fmt.Println(outBytes)
+	fmt.Println(keyBytes)
 
-	// TODO: Finish get; allow for hex key or string key parameter?
-
-	// outBytes = myWorld.Get(key.)
+	// // TODO: Finish get; allow for hex key or string key parameter?
+	outBytes, err := myWorld.Get(keyBytes)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(outBytes[:32])
 	// return 1
 	return 0
 }
