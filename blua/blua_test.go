@@ -37,7 +37,7 @@ func TestWhatevs(t *testing.T) {
 	if err := L.DoString(l); err != nil {
 		t.Error("DoString: ", err.Error())
 	}
-	l = `db.get({0, 0, 0, 0, 0, 0, 0, 0, 43})`
+	l = `io.write(db.get({0, 0, 0, 0, 0, 0, 0, 0, 43})[1], "\n")`
 	if err := L.DoString(l); err != nil {
 		t.Error("DoString: ", err.Error())
 	}

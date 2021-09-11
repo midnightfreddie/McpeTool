@@ -2,7 +2,6 @@ package blua
 
 import (
 	"encoding/hex"
-	"fmt"
 
 	lua "github.com/yuin/gopher-lua"
 )
@@ -58,9 +57,9 @@ func dbGetKeys(L *lua.LState) int {
 // lua func, pass it a byte array which is the key to fetch from leveldb
 //   returns byte array on lua stack
 //   currently does not handle errors
+// TODO: Allow for hex key or string key parameter?
 func dbGet(L *lua.LState) int {
-	// var outTable = L.NewTable()
-	// var outBytes []byte
+	var outTable = L.NewTable()
 	var keyBytes []byte
 	key := L.ToTable(1)
 	keyBytes = make([]byte, L.ObjLen(key))
@@ -74,16 +73,16 @@ func dbGet(L *lua.LState) int {
 		}
 		i++
 	})
-	fmt.Println(keyBytes)
 
-	// // TODO: Finish get; allow for hex key or string key parameter?
 	outBytes, err := myWorld.Get(keyBytes)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(outBytes[:32])
-	// return 1
-	return 0
+	for i := 0; i < len(outBytes); i++ {
+		outTable.Append(lua.LNumber(outBytes[i]))
+	}
+	L.Push(outTable)
+	return 1
 }
 
 // copied from api/api.go ConvertKey
